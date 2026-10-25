@@ -1,0 +1,26 @@
+Held-Out Test Cohort,Test N,Model,Coverage (%),Zero-Shot AUROC,Accuracy (%),Brier Score,ECE
+UCI Hungarian,293,Inner-Join LightGBM (Shared Feats),100.0,0.5917,55.63,0.2808,0.216
+UCI Hungarian,293,Union-Schema LightGBM (NaN-Aware),100.0,0.8423,74.06,0.1743,0.1325
+UCI Hungarian,293,HybridTabNet-QC Baseline (Inner-Join),100.0,0.6111,59.04,0.2581,0.1254
+UCI Hungarian,293,SchemaFlexTabNet-QC (100% Coverage),100.0,0.8641,76.79,0.1545,0.1026
+UCI Hungarian,229,SchemaFlexTabNet-QC (Conformal Accepted alpha=0.10),78.2,0.8926,85.15,0.1236,0.0756
+UCI VA + Switzerland,308,Inner-Join LightGBM (Shared Feats),100.0,0.5353,53.57,0.2863,0.3047
+UCI VA + Switzerland,308,Union-Schema LightGBM (NaN-Aware),100.0,0.728,72.4,0.1934,0.2134
+UCI VA + Switzerland,308,HybridTabNet-QC Baseline (Inner-Join),100.0,0.5451,70.13,0.2064,0.1921
+UCI VA + Switzerland,308,SchemaFlexTabNet-QC (100% Coverage),100.0,0.7241,74.03,0.1721,0.1382
+UCI VA + Switzerland,224,SchemaFlexTabNet-QC (Conformal Accepted alpha=0.10),72.7,0.7705,83.48,0.1335,0.0623
+UCI Cleveland (Deduplicated),303,Inner-Join LightGBM (Shared Feats),100.0,0.5705,56.44,0.2748,0.1759
+UCI Cleveland (Deduplicated),303,Union-Schema LightGBM (NaN-Aware),100.0,0.8566,76.9,0.156,0.0559
+UCI Cleveland (Deduplicated),303,HybridTabNet-QC Baseline (Inner-Join),100.0,0.6785,62.71,0.2316,0.089
+UCI Cleveland (Deduplicated),303,SchemaFlexTabNet-QC (100% Coverage),100.0,0.8433,73.6,0.1829,0.1209
+UCI Cleveland (Deduplicated),239,SchemaFlexTabNet-QC (Conformal Accepted alpha=0.10),78.9,0.8755,78.66,0.1615,0.0946
+Z-Alizadeh Sani (Tehran Angiography),303,Inner-Join LightGBM (Shared Feats),100.0,0.6881,66.34,0.2278,0.1959
+Z-Alizadeh Sani (Tehran Angiography),303,Union-Schema LightGBM (NaN-Aware),100.0,0.6028,68.98,0.2131,0.1148
+Z-Alizadeh Sani (Tehran Angiography),303,HybridTabNet-QC Baseline (Inner-Join),100.0,0.7126,46.86,0.2877,0.3229
+Z-Alizadeh Sani (Tehran Angiography),303,SchemaFlexTabNet-QC (100% Coverage),100.0,0.7043,62.71,0.2333,0.2072
+Z-Alizadeh Sani (Tehran Angiography),111,SchemaFlexTabNet-QC (Conformal Accepted alpha=0.10),36.6,0.7895,72.07,0.2136,0.1921
+Framingham Heart Study,4238,Inner-Join LightGBM (Shared Feats),100.0,0.6701,51.91,0.31,0.3895
+Framingham Heart Study,4238,Union-Schema LightGBM (NaN-Aware),100.0,0.6695,53.26,0.2965,0.3614
+Framingham Heart Study,4238,HybridTabNet-QC Baseline (Inner-Join),100.0,0.675,50.94,0.3425,0.4169
+Framingham Heart Study,4238,SchemaFlexTabNet-QC (100% Coverage),100.0,0.6778,51.32,0.3213,0.3958
+Framingham Heart Study,2715,SchemaFlexTabNet-QC (Conformal Accepted alpha=0.10),64.1,0.7062,51.23,0.3576,0.4109

@@ -1,0 +1,92 @@
+# Canonical Feature Registry for Cross-Cohort Harmonization
+canonical_features:
+  # Continuous Clinical Features (with physiological plausibility bounds)
+  age_years:
+    type: continuous
+    unit: years
+    min_plausible: 18.0
+    max_plausible: 110.0
+    monotonic_direction: 1  # +1 means risk should not decrease as age increases
+  systolic_bp:
+    type: continuous
+    unit: mmHg
+    min_plausible: 60.0
+    max_plausible: 260.0
+    monotonic_direction: 1
+  diastolic_bp:
+    type: continuous
+    unit: mmHg
+    min_plausible: 40.0
+    max_plausible: 160.0
+    monotonic_direction: 1
+  bmi:
+    type: continuous
+    unit: kg/m2
+    min_plausible: 12.0
+    max_plausible: 70.0
+    monotonic_direction: 1
+  pulse_pressure:
+    type: continuous
+    unit: mmHg
+    min_plausible: 15.0
+    max_plausible: 160.0
+    monotonic_direction: 1
+  chol_mgdl:
+    type: continuous
+    unit: mg/dL
+    min_plausible: 80.0
+    max_plausible: 650.0
+    monotonic_direction: 1
+  max_hr_thalach:
+    type: continuous
+    unit: bpm
+    min_plausible: 50.0
+    max_plausible: 230.0
+    monotonic_direction: -1  # -1 means higher max HR typically indicates better cardiac fitness
+  st_depression_oldpeak:
+    type: continuous
+    unit: mm
+    min_plausible: 0.0
+    max_plausible: 10.0
+    monotonic_direction: 1
+
+  # Categorical / Ordinal Clinical Features
+  sex_male:
+    type: categorical
+    num_classes: 2  # 0: Female, 1: Male
+  chol_tier:
+    type: categorical
+    num_classes: 4  # 1: Normal (<200), 2: Borderline (200-239), 3: High (>=240)
+  gluc_tier:
+    type: categorical
+    num_classes: 4  # 1: Normal, 2: Prediabetes, 3: Diabetes
+  chest_pain_type:
+    type: categorical
+    num_classes: 5  # 1: Typical angina, 2: Atypical angina, 3: Non-anginal, 4: Asymptomatic
+  exercise_angina:
+    type: categorical
+    num_classes: 2  # 0: No, 1: Yes
+  smoker:
+    type: categorical
+    num_classes: 2  # 0: No, 1: Yes
+
+clinical_concepts:
+  hypertension_stage2:
+    description: "Systolic BP >= 140 mmHg or Diastolic BP >= 90 mmHg"
+    target_type: binary
+
+model_hyperparameters:
+  d_model: 64
+  nhead: 4
+  num_layers: 2
+  dim_feedforward: 128
+  dropout: 0.10
+  p_feature_mask: 0.20
+  lambda_concept: 0.10
+  lambda_mono: 1.20
+  optimizer: AdamW
+  learning_rate: 0.0015
+  weight_decay: 0.0001
+  batch_size: 256
+  epochs: 16
+

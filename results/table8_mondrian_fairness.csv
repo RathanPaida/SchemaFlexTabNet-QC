@@ -1,0 +1,7 @@
+Conformal Method,Demographic Subgroup,Subgroup N,Coverage (%),AUROC,Accuracy (%),False Positive Rate (FPR),False Negative Rate (FNR)
+"1. Uncalibrated Base (100% Coverage, t=0.50)",Male,210,100.0,0.8078,63.81,0.6337,0.1101
+"1. Uncalibrated Base (100% Coverage, t=0.50)",Female,88,100.0,0.7804,46.59,0.6338,0.1176
+2. Marginal Split Conformal (Global Threshold),Male,161,76.7,0.8181,78.26,0.0375,0.3951
+2. Marginal Split Conformal (Global Threshold),Female,70,79.5,0.7982,78.57,0.1864,0.3636
+3. Mondrian Group-Fair Conformal (Conditional),Male,167,79.5,0.8417,78.44,0.1733,0.25
+3. Mondrian Group-Fair Conformal (Conditional),Female,71,80.7,0.7982,76.06,0.2456,0.2143

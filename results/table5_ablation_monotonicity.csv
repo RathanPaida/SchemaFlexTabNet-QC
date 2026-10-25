@@ -1,0 +1,6 @@
+Architecture Variant,Zero-Shot AUROC,Accuracy (%),Brier Score,Calibrated ECE,Monotonicity Violations (%)
+1. Inner-Join Baseline (Shared Feats Only),0.6342,59.73,0.2532,0.1368,15.04
+2. + Schema-Flexible Tokenizer (15 Union Feats),0.856,75.77,0.1872,0.1672,19.23
+3. + Random Feature Dropout (p_mask=0.20),0.8604,77.13,0.154,0.1008,4.18
+4. + Auxiliary Concept Bottleneck (lambda_1=0.10),0.8611,77.82,0.1582,0.1081,12.97
+5. Full SchemaFlexTabNet-QC (+ Monotonicity & Temp),0.8652,80.2,0.1422,0.0572,0.26

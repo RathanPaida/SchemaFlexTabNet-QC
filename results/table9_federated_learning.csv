@@ -1,0 +1,4 @@
+Deployment Framework,Privacy Guarantee,Communication Rounds,Held-Out Zero-Shot AUROC,Gap to Centralized
+1. Isolated Local Hospital Models,Local Data Only (No Sharing),0,0.7461,-0.1286
+2. Schema-Aware Federated SchemaFlexTabNet-QC,Masked Token Weights Only (Zero Row Sharing),10,0.7671,-0.1075
+3. Centralized Pooled Training,Full Data Sharing (Pooled EHRs),N/A (Centralized),0.8746,0.0

@@ -1,0 +1,6 @@
+Held-Out Cohort,Test N,Proposed AUROC,HybridTabNet AUROC,Delta vs Hybrid,DeLong z (vs Hybrid),DeLong p-value (vs Hybrid),Signif (vs Hybrid),LightGBM AUROC,Delta vs LightGBM,DeLong z (vs LightGBM),DeLong p-value (vs LightGBM),Signif (vs LightGBM)
+UCI Hungarian,293,0.8641,0.6111,0.253,8.186,2.2204e-16,***,0.5917,0.2724,7.735,1.0436e-14,***
+UCI VA + Switzerland,308,0.7241,0.5451,0.179,3.508,4.5072e-04,***,0.5353,0.1888,4.104,4.0655e-05,***
+UCI Cleveland (Deduplicated),303,0.8433,0.6785,0.1648,5.003,5.6472e-07,***,0.5705,0.2728,7.768,7.9936e-15,***
+Z-Alizadeh Sani (Tehran),303,0.7043,0.7126,-0.0082,-0.438,0.6613,n.s.,0.6881,0.0162,0.957,0.3388,n.s.
+Framingham Heart Study,4238,0.6778,0.675,0.0029,1.005,0.3147,n.s.,0.6701,0.0078,1.499,0.1338,n.s.

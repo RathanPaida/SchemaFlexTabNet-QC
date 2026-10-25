@@ -1,0 +1,4 @@
+Dataset Configuration,Total Samples (Clean),Test Set N,Accuracy (%),AUROC,Brier Score,Mahmud Reported Accuracy
+"Combined Leaked (Mahmud et al. Setup, 71,025 rows)",69692,10454,73.48,0.7978,0.1818,90.1%
+"Combined Deduplicated (Kaggle Pruned, 70,302 rows)",68969,10346,73.18,0.7954,0.1828,N/A
+"Sulianova Screening Cohort Alone (70,000 rows)",68667,10301,73.42,0.7987,0.1815,N/A

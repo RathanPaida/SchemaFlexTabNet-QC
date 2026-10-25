@@ -1,0 +1,7 @@
+Missing Feature Rate (%),SchemaFlexTabNet-QC (Proposed) AUROC,Unregularized Transformer (No Masking) AUROC,Median-Imputed LightGBM AUROC
+0,0.852,0.8377,0.7591
+10,0.83,0.8018,0.7122
+20,0.8036,0.7767,0.6752
+30,0.751,0.7294,0.6113
+40,0.7159,0.6955,0.6119
+50,0.7123,0.6985,0.5624

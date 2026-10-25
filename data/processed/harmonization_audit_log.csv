@@ -1,0 +1,10 @@
+cohort,initial_rows,duplicates_removed,physiologically_corrupt_removed,final_clean_rows
+UCI_Cleveland,303,0,0,303
+UCI_Hungarian,294,1,0,293
+UCI_Switzerland,123,0,11,112
+UCI_VA_Long_Beach,200,3,1,196
+Sulianova_CVD,70000,58,1374,68568
+Framingham_Heart_Study,4240,0,2,4238
+UCI_Statlog_Heart,270,0,0,270
+Z_Alizadeh_Sani,303,0,0,303
+Kaggle_Heart_Audit,1025,723,0,302
