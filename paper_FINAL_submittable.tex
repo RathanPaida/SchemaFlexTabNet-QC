@@ -143,18 +143,22 @@ We did not have access to code or splits for~\cite{mahmud2026}, and we do not cl
 We explicitly distinguish between (i)~a reproduction of the reported data-processing and splitting protocol using standard tabular baselines, (ii)~a baseline replication, and (iii)~an architecture-faithful reproduction of the original neural model. Lacking the original code, random seeds, and split indices of~\cite{mahmud2026}, we implemented the stated 70/15/15 train/validation/test protocol on the raw 71{,}025-row pool, the deduplicated pool (70{,}302), and Sulianova alone (70{,}000), using the same hemodynamic filtering and standard LightGBM, Random Forest, and MLP baselines with default hyperparameters and the engineered meta-features described in~\cite{mahmud2026}. Table~\ref{tab:repro} shows that all three configurations land at about 73\% accuracy and 0.795--0.799 AUROC. Keeping the duplicates changes accuracy by $+0.30$ points, matching the fixed-prediction estimate. We could not reproduce 90.1\% with these features and this protocol using standard tabular models. Because original neural weights and splits remain unreleased, we cannot determine whether the original transformer architecture achieved 90.1\% through unstated preprocessing, hyperparameter optimization, or reporting discrepancies; we recommend release of splits and code.
 
 \begin{table}[t]
-\caption{Reproduction of the published 70/15/15 setup. Hemodynamic filtering reduces the row counts.}
+\caption{Reproduction of the published 70/15/15 setup. Clean $N$ reflects physiological filtering.}
 \label{tab:repro}
 \centering\footnotesize
-\begin{tabular}{p{3.0cm}rrrr}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{3.1cm}rrrr}
 \toprule
 Configuration & Clean $N$ & Test $N$ & Acc. (\%) & AUROC\\
 \midrule
 Pool, duplicates kept (71{,}025 raw) & 69{,}692 & 10{,}454 & 73.48 & 0.7978\\
 Pool, deduplicated (70{,}302 raw) & 68{,}969 & 10{,}346 & 73.18 & 0.7954\\
-Sulianova alone (70{,}000 raw) & 68{,}667 & 10{,}301 & 73.42 & 0.7987\\
+Sulianova alone, full QC (Table~\ref{tab:audit}) & 68{,}568 & 10{,}286 & 73.51 & 0.7968\\
+Sulianova alone, minimal vital filter$^\dagger$ & 68{,}667 & 10{,}301 & 73.42 & 0.7987\\
 \bottomrule
 \end{tabular}
+\vspace{1.5pt}
+{\scriptsize $^\dagger$Reconciliation: The full QC gatekeeper (Table~\ref{tab:audit}) rejects 58 duplicate rows and 1{,}374 physiologically corrupt vitals/BMI records ($70{,}000 - 58 - 1{,}374 = 68{,}568$). Applying only minimal SBP/DBP bounds without deduplication yields 68{,}667 rows (a 99-record difference). Under both protocols, accuracy saturates at $\approx$73.4--73.5\%.\par}
 \end{table}
 
 %=====================================================================
@@ -345,7 +349,7 @@ Framingham & 4{,}238 & $+0.0083$ & 0.722 & 0.470 & 1.000 & n.s. & 0.71 (n.s.)\\
 \end{figure}
 
 \subsection{Ablation and monotonicity}\label{sec:ablation}
-Table~\ref{tab:abl} isolates each component on the held-out 15\% multi-cohort partition. We highlight an essential methodological distinction: Variant 1 (inner join, AUROC 0.6342) restricts input features to the 5 shared features, whereas Variant 2 (+ schema tokenizer, AUROC 0.8560) expands access to all 14 union features. To isolate feature access from model architecture, we evaluated a NaN-aware LightGBM on the exact same union schema, which achieved AUROC 0.8510 (vs.\ 0.6280 on the inner join). Thus, schema retention (preserving specialized diagnostic variables) accounts for the vast majority ($\approx$+0.223 AUROC) of the observed gain, while the schema-flexible tokenizer provides an incremental $+0.0050$ AUROC alongside the structural capability to ingest dynamic subsets without static imputation.
+Table~\ref{tab:abl} isolates each component on the held-out 15\% multi-cohort partition. We highlight an essential methodological distinction: Variant 1 (inner join, AUROC 0.6342) restricts input features to the 5 shared features, whereas Variant 2 (+ schema tokenizer, AUROC 0.8560) expands access to all 14 union features. To isolate feature access from model architecture, we evaluated a NaN-aware LightGBM on genuinely identical train, validation, and test partitions using equivalent feature preprocessing, which achieved AUROC 0.8510 (vs.\ 0.6280 on the inner join). Thus, schema retention (preserving specialized diagnostic variables) accounts for the vast majority ($\approx$+0.223 AUROC) of the observed gain, while the schema-flexible tokenizer provides an incremental $+0.0050$ AUROC alongside the structural capability to ingest dynamic subsets without static imputation. Given the modest incremental margin (+0.0050), this does not establish general architectural superiority of tabular transformers over gradient-boosted trees.
 Feature dropout adds $+0.004$ AUROC and lowers monotonicity violations from 19.2\% to 4.2\%. The concept head changes AUROC by $+0.0007$ and raises violations to 13.0\%, confirming its value is interpretive rather than predictive. Finally, in Variant 5, the positive-constrained skip path and autograd gradient penalty ($\lambda_2=1.20$) independently regularize input directional gradients, suppressing counterfactual monotonicity violation rates to 0.26\% on synthetic $+0.5$~SD perturbations of SBP and cholesterol without compromising discriminative capacity (0.8652 AUROC). In contrast, post-hoc temperature scaling operates strictly on output logits to minimize probability calibration error (ECE 0.0572) and has zero effect on AUROC. These two mechanisms address orthogonal clinical objectives (gradient-level physiological plausibility vs.\ calibrated confidence) and should not be conflated as a single architectural intervention. These are single-run figures without confidence intervals, and the evaluation split differs from that of Table~\ref{tab:loco}.
 
 \begin{table}[t]
@@ -481,7 +485,7 @@ We emphasize that items 1--2 are enough, by themselves, to remove the most extre
 
 %=====================================================================
 \section{Conclusion}\label{sec:conclusion}
-Headline accuracies on public cardiovascular benchmarks should be read with suspicion until duplicates, cross-cohort overlap and schema loss are audited. After cleaning, realistic accuracy on pooled routine data is about 73--76\%, and a 70/15/15 reproduction of a published 90.1\% setup gives about 73\% whether or not the duplicates are kept. Cross-hospital transfer depends mostly on preserving unshared variables rather than on architectural novelty. \sfn{} offers a principled way to train across non-identical schemas, with a modest mean gain over a strong NaN-aware tree baseline that is not significant per cohort after Holm correction, graceful degradation under missing inputs (about 0.08--0.10 AUROC above native-NaN trees at 50\% missingness), and an abstention mechanism whose coverage guarantee weakens under cohort shift. Its claims must be tightened by multi-seed evaluation and prospective validation. We release the audit log, schema registry and code to support independent verification.
+Headline accuracies on public cardiovascular benchmarks should be read with suspicion until duplicates, cross-cohort overlap and schema loss are audited. After cleaning, realistic accuracy on pooled routine data is about 73--76\%, and an empirical 70/15/15 reproduction of a published 90.1\% setup using standard tabular baselines gives about 73\% whether or not the duplicates are kept (though this does not refute unreleased proprietary neural code). Cross-hospital transfer depends mostly on preserving unshared variables rather than on architectural novelty. \sfn{} offers a principled way to train across non-identical schemas, with a modest mean gain over a strong NaN-aware tree baseline that is not significant per cohort after Holm correction. At 50\% test-time feature missingness, it exceeds native-NaN LightGBM and XGBoost by approximately 0.028 and 0.041 AUROC, respectively, but is outperformed by median-imputed LightGBM (0.726), confirming that general superiority under missingness is not established. Furthermore, its conformal coverage guarantee weakens under cohort shift. Its claims must be tightened by multi-seed evaluation and prospective validation. We release the audit log, schema registry and code to support independent verification.
 
 \section*{Data and Code Availability}
 All datasets are public. Code, configuration, cleaned splits and result tables: \url{https://github.com/RathanPaida/SchemaFlexTabNet-QC}.
