@@ -48,15 +48,15 @@ html_content = f"""<!DOCTYPE html>
 <style>
   @page {{
     size: letter;
-    margin: 16mm 13mm 16mm 13mm;
+    margin: 14mm 12mm 14mm 12mm;
     @bottom-right {{
       content: counter(page);
     }}
   }}
   body {{
     font-family: 'Times New Roman', Times, serif;
-    font-size: 9.3pt;
-    line-height: 1.32;
+    font-size: 9.05pt;
+    line-height: 1.28;
     color: #111;
     margin: 0;
     padding: 0;
@@ -65,102 +65,102 @@ html_content = f"""<!DOCTYPE html>
   }}
   .header {{
     text-align: center;
-    margin-bottom: 14px;
+    margin-bottom: 11px;
   }}
   .journal-header {{
     font-size: 8pt;
     font-variant: small-caps;
     color: #555;
     letter-spacing: 0.5px;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     border-bottom: 0.5pt solid #aaa;
-    padding-bottom: 3px;
+    padding-bottom: 2px;
   }}
   h1.title {{
-    font-size: 16pt;
+    font-size: 15.5pt;
     font-weight: bold;
-    margin: 4px 0 8px 0;
-    line-height: 1.22;
+    margin: 3px 0 6px 0;
+    line-height: 1.20;
   }}
   .authors {{
-    font-size: 10pt;
+    font-size: 9.8pt;
     font-weight: bold;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }}
   .affiliation {{
-    font-size: 8.5pt;
+    font-size: 8.3pt;
     font-style: italic;
     color: #333;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }}
   .meta-note {{
-    font-size: 7.5pt;
+    font-size: 7.4pt;
     color: #444;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }}
   .abstract-box {{
-    margin: 0 auto 14px auto;
-    padding: 8px 12px;
+    margin: 0 auto 11px auto;
+    padding: 7px 11px;
     background: #fbfbfb;
     border: 0.5pt solid #ddd;
     border-radius: 2px;
-    font-size: 8.6pt;
-    line-height: 1.30;
+    font-size: 8.4pt;
+    line-height: 1.27;
   }}
   .abstract-box strong.lead {{
     font-variant: small-caps;
     font-weight: bold;
   }}
   .keywords {{
-    margin-top: 5px;
-    font-size: 8pt;
+    margin-top: 4px;
+    font-size: 7.8pt;
     font-style: italic;
   }}
   .columns {{
     column-count: 2;
-    column-gap: 16px;
+    column-gap: 15px;
     column-fill: balance;
   }}
   h2.sec-title {{
-    font-size: 9.8pt;
+    font-size: 9.6pt;
     font-variant: small-caps;
     font-weight: bold;
     border-bottom: 0.5pt solid #222;
-    margin: 12px 0 5px 0;
+    margin: 10px 0 4px 0;
     padding-bottom: 1px;
     text-align: center;
     break-after: avoid;
   }}
   h3.subsec-title {{
-    font-size: 9.2pt;
+    font-size: 9.0pt;
     font-style: italic;
     font-weight: bold;
-    margin: 8px 0 3px 0;
+    margin: 7px 0 2px 0;
     break-after: avoid;
   }}
   p {{
-    margin: 0 0 5px 0;
-    text-indent: 11px;
+    margin: 0 0 4.5px 0;
+    text-indent: 10px;
   }}
   p.no-indent {{
     text-indent: 0;
   }}
   .math-block {{
     text-align: center;
-    margin: 5px 0;
+    margin: 4px 0;
     font-style: italic;
-    font-size: 8.8pt;
+    font-size: 8.6pt;
   }}
   table.ieee-tab {{
     width: 100%;
     border-collapse: collapse;
-    margin: 7px 0;
-    font-size: 7.2pt;
-    line-height: 1.22;
+    margin: 5px 0;
+    font-size: 7.0pt;
+    line-height: 1.18;
     break-inside: avoid;
   }}
   table.ieee-tab th, table.ieee-tab td {{
-    padding: 2.5px 3.5px;
+    padding: 2.2px 3.2px;
     text-align: left;
   }}
   table.ieee-tab th.num, table.ieee-tab td.num {{
@@ -181,14 +181,14 @@ html_content = f"""<!DOCTYPE html>
     border-bottom: 0.4pt solid #ccc;
   }}
   .tab-caption {{
-    font-size: 7.6pt;
+    font-size: 7.4pt;
     font-weight: bold;
     text-align: center;
     margin-bottom: 2px;
     font-variant: small-caps;
   }}
   .fig-box {{
-    margin: 8px 0;
+    margin: 6px 0;
     text-align: center;
     break-inside: avoid;
   }}
@@ -198,26 +198,26 @@ html_content = f"""<!DOCTYPE html>
     border: 0.4pt solid #eee;
   }}
   .fig-caption {{
-    font-size: 7.5pt;
-    margin-top: 3px;
+    font-size: 7.3pt;
+    margin-top: 2px;
     text-align: justify;
-    line-height: 1.20;
+    line-height: 1.18;
   }}
   .full-width {{
     column-span: all;
-    margin: 8px 0;
+    margin: 6px 0;
   }}
   .references {{
-    font-size: 7.2pt;
-    line-height: 1.20;
-    margin-top: 8px;
+    font-size: 6.9pt;
+    line-height: 1.16;
+    margin-top: 6px;
   }}
   .references ol {{
     margin: 0;
-    padding-left: 12px;
+    padding-left: 11px;
   }}
   .references li {{
-    margin-bottom: 2.5px;
+    margin-bottom: 1.8px;
   }}
 </style>
 </head>
@@ -232,11 +232,11 @@ html_content = f"""<!DOCTYPE html>
 </div>
 
 <div class="abstract-box">
-  <strong class="lead">Abstract</strong>—Recent high-profile literature in machine learning for cardiovascular disease (CVD) risk stratification reports diagnostic accuracies exceeding 90% on public benchmarks (e.g., 90.1% in Mahmud et al., 2025). In this paper, we conduct a forensic audit of these claims, uncovering critical methodological vulnerabilities in current clinical tabular workflows:
-  <strong>(1) Duplicate Contamination and Leakage:</strong> The widely used Kaggle Heart Disease dataset contains 70.5% exact duplicate records (723 of 1,025 rows). Standard random 80/20 train-test splits leak 97.1% of test patients into training, yielding an artificial 98.54% accuracy that plummets to 77.05% upon patient-level deduplication. However, we demonstrate mathematically and empirically that duplicate leakage alone cannot explain the 90.1% claim across the combined 71,025-patient composite (where duplicates constitute only ~1.02% of records); an exhaustive audit reveals internal discrepancies in published confusion matrices (implying 91.35% vs. 89.5% accuracy) and class balance contradictions. Standard supervised models trained on this 71,025-patient composite achieve an empirical ceiling of 73.48% accuracy (0.7978 AUROC).
-  <strong>(2) The Inner-Join Collapse:</strong> Naive multi-center merges discard non-overlapping clinical biomarkers (e.g., ST depression, peak heart rate, fluoroscopy), causing out-of-cohort zero-shot AUROC to collapse to 0.5353–0.5917.
+  <strong class="lead">Abstract</strong>—Recent literature in cardiovascular risk prediction reports accuracies exceeding 90% on public benchmarks (e.g., 90.1% in Mahmud et al., 2025). In this paper, we conduct a forensic audit of these claims, uncovering critical methodological vulnerabilities in current clinical tabular workflows:
+  <strong>(1) Duplicate Contamination and Leakage:</strong> The widely used Kaggle Heart Disease dataset contains 70.5% exact duplicate records (723 of 1,025 rows). Standard random 80/20 train-test splits leak 97.1% of test patients into training, yielding an artificial 98.54% accuracy that plummets to 77.05% upon patient-level deduplication. However, we demonstrate mathematically and empirically that duplicate leakage alone cannot explain the 90.1% claim across the combined 71,025-patient composite (where duplicates constitute only ~1.02% of records); an illustrative fixed-prediction calculation predicts a +0.28% shift, while controlled retraining yields 73.48% (leaked) vs 73.18% (deduplicated). An exhaustive audit reveals internal discrepancies in published confusion matrices (implying 91.35% vs. 89.5% accuracy) and class balance contradictions.
+  <strong>(2) Record Overlap and Inner-Join Collapse:</strong> All 270 UCI Statlog records match Cleveland records under a clinical signature, indicating potential duplicate derivation and warranting exclusion against leakage. Naive multi-center merges discard non-overlapping clinical biomarkers (e.g., ST depression, peak heart rate, fluoroscopy), causing zero-shot cross-cohort AUROC to collapse to 0.5353–0.5917.
   To solve these challenges, we introduce <strong>SchemaFlexTabNet-QC</strong>, a tabular transformer framework featuring: (i) a hemodynamic plausibility gatekeeper; (ii) schema-flexible feature tokenization (<em>T<sub>i,j</sub> = <strong>e</strong><sub>name</sub>(f<sub>j</sub>) + &phi;<sub>val</sub>(x<sub>i,j</sub>)</em>) with masked attention and random feature dropout (<em>p<sub>mask</sub> = 0.20</em>), accommodating arbitrary feature subsets without column pruning; (iii) a positive-constrained monotonic residual skip path regularized by autograd penalties (&lambda;<sub>mono</sub> = 1.20), reducing clinical monotonicity violations from 15.04% to 0.26%; (iv) split conformal abstention with Mondrian group-fair calibration; and (v) decentralized Schema-Aware Masked Federated Averaging (Schema-FedAvg).
-  Evaluated on 74,013 deduplicated patients across six independent cohorts under strict Leave-One-Cohort-Out (LOCO) testing, SchemaFlexTabNet-QC matches or outperforms Union-Schema NaN-aware LightGBM (mean gain +0.0229 AUROC; 0.8641 on Hungarian and 0.7043 on Z-Alizadeh Sani). Under conformal abstention (&alpha; = 0.10), zero-shot AUROC rises to <strong>0.8926</strong> (85.15% accuracy, 78.2% acceptance rate) on Hungarian and <strong>0.8755</strong> on Cleveland. Under 50% test-time feature dropout, SchemaFlexTabNet-QC maintains 0.7123 AUROC, retaining an advantage over Native-NaN LightGBM (0.6131) and median-imputed baselines (0.6337). Mondrian calibration halves sex false-positive disparities (0.148 &rarr; 0.072). Finally, we discuss construct divergence across prevalent CVD, angiographic disease, and incident 10-year coronary events, establishing rigorous reporting practices for clinical tabular AI.
+  Evaluated on 74,013 deduplicated patients across six independent cohorts under strict Leave-One-Cohort-Out (LOCO) testing, SchemaFlexTabNet-QC reaches a mean AUROC of 0.7627 vs. 0.7398 for Union-Schema NaN-aware LightGBM (gain +0.0229); no per-cohort difference is statistically significant after Holm correction, indicating superiority was not established though formal equivalence is not proven. Under conformal abstention (&alpha; = 0.10), zero-shot AUROC rises to <strong>0.8926</strong> (85.15% accuracy, 78.2% acceptance rate) on Hungarian and <strong>0.8755</strong> on Cleveland. Conformal sets calibrated on source cohorts under-cover on held-out hospitals (68.8%–88.4% against a nominal 90%), rigorously bounded by accepted accuracy and falling to 68.8% on Framingham due to outcome construct divergence. Under 50% test-time feature dropout, SchemaFlexTabNet-QC maintains 0.7123 AUROC, retaining an advantage over Native-NaN LightGBM (0.6131) and median-imputed baselines (0.6337). Mondrian calibration halves sex false-positive disparities (0.148 &rarr; 0.072).
   <div class="keywords">
     <strong>Index Terms</strong>—Cardiovascular Risk Prediction, Data Leakage, Forensic Auditing, Tabular Deep Learning, Schema-Flexible Tokenization, Conformal Prediction, Monotonicity Constraints, Federated Learning.
   </div>
@@ -269,11 +269,11 @@ html_content = f"""<!DOCTYPE html>
 <h3 class="subsec-title">B. The 90.1% Claim on the 71,025-Patient Composite</h3>
 <p>In Mahmud et al. (2025) [2], the authors claim a diagnostic accuracy of 90.1% (AUROC 0.963) on a combined cardiovascular dataset. The combined dataset was constructed by pooling the 1,025-row Kaggle Heart dataset with the 70,000-row Sulianova Cardiovascular dataset [2], totaling <em>N = 71,025</em> rows. The authors specify a 70/15/15 train/validation/test split, yielding a test set of exactly:</p>
 <div class="math-block">N<sub>test</sub> = 0.15 &times; 71,025 = 10,653.75 &approx; 10,653 rows.</div>
-<p>The exact match of 10,653 test rows confirms that the 1,025-row Kaggle file was pooled into the dataset. However, attributing the 90.1% accuracy solely to memorization of the 723 duplicate rows is mathematically flawed:</p>
+<p>The exact match of 10,653 test rows confirms that the 1,025-row Kaggle file was pooled into the dataset. However, attributing the 90.1% accuracy solely to memorization of the 723 duplicate rows is mathematically and empirically flawed:</p>
 <div class="math-block">Duplicate Fraction = 723 / 71,025 = 1.018% &approx; 1.02%.</div>
-<p>Even under the extreme assumption that every duplicate row is classified with 100% accuracy, a 1.02% contaminated subset can alter the global test accuracy by at most:</p>
-<div class="math-block">&Delta; Acc<sub>max</sub> &le; 0.0102 &times; (1.00 &minus; 0.73) &approx; +0.28%.</div>
-<p>The remaining 98.98% of the dataset consists of Sulianova records. On this dataset, extensive multi-model benchmarks (Table II) demonstrate that state-of-the-art models (LightGBM, XGBoost, CatBoost, TabNet) saturate between 73.4% and 76.0% accuracy.</p>
+<p>In an illustrative fixed-prediction calculation where predictions on non-duplicate records remain invariant, even if every duplicate row were classified with 100% accuracy, raising their accuracy from 73% to 100% would shift overall test accuracy by at most:</p>
+<div class="math-block">&Delta; Acc<sub>fixed</sub> &le; 0.0102 &times; (1.00 &minus; 0.73) &approx; +0.28%.</div>
+<p>While duplicate retention can also perturb model weights and split compositions, our controlled retraining experiments confirm this order of magnitude: accuracy changes by only +0.30% (73.18% vs. 73.48%). Duplicates therefore cannot explain 90.1% on a pool that is 98.6% Sulianova.</p>
 <p>To understand why 90.1% was reported, we conducted a forensic analysis of the published manuscript [2]:</p>
 <p class="no-indent">&bull; <em>Confusion Matrix Discrepancy:</em> In Fig. 2 of Mahmud et al., the confusion matrix displays: True Positives (TP) = 5,044, True Negatives (TN) = 4,688, False Positives (FP) = 444, and False Negatives (FN) = 477. The sum of these cells is 5,044 + 4,688 + 444 + 477 = 10,653 (matching the 15% test set). However, computing accuracy directly from this matrix yields:</p>
 <div class="math-block">Accuracy = (5,044 + 4,688) / 10,653 = 9,732 / 10,653 = 91.35%,</div>
@@ -305,10 +305,10 @@ html_content = f"""<!DOCTYPE html>
   <div style="font-size: 6.8pt; color: #555; text-align: left; margin-top: 2px;">*Fig. 2 confusion matrix in Mahmud et al. implies 91.35% accuracy; text reports 90.10% and 89.50%.</div>
 </div>
 
-<p>To empirically test whether standard supervised learning on this combined schema can produce &gt;90% accuracy, we implemented the 70/15/15 split on the exact combined 71,025-row dataset, the deduplicated dataset, and Sulianova alone under identical hemodynamic filtering (Table I). The combined leaked pipeline yields <strong>73.48% accuracy</strong> (0.7978 AUROC), the deduplicated pipeline yields <strong>73.18%</strong>, and Sulianova alone yields <strong>73.42%</strong>. The inclusion of duplicates shifts accuracy by only +0.30%. We conclude that while duplicate contamination in the Kaggle file is real, the 90.1% claim cannot be reproduced under standard supervised training on these clinical features, reflecting undocumented preprocessing steps or reporting discrepancies in the original publication.</p>
+<p>To empirically test whether standard supervised learning on this combined schema can produce &gt;90% accuracy, we implemented the 70/15/15 split on the exact combined 71,025-row dataset, the deduplicated dataset, and Sulianova alone under identical hemodynamic filtering (Table I). We explicitly distinguish between (i) a reproduction of the reported data-processing and splitting protocol with standard tabular baselines, (ii) a baseline replication, and (iii) an architecture-faithful reproduction of the proprietary neural model. Using standard LightGBM, Random Forest, and MLP baselines with default hyperparameters and engineered features, the combined leaked pipeline yields <strong>73.48% accuracy</strong> (0.7978 AUROC), the deduplicated pipeline yields <strong>73.18%</strong>, and Sulianova alone yields <strong>73.42%</strong>. We could not reproduce 90.1% with these features and this protocol using standard tabular models. Because original neural weights and splits remain unreleased, we cannot determine whether the original transformer architecture achieved 90.1% through unstated preprocessing or reporting discrepancies.</p>
 
-<h3 class="subsec-title">C. Cross-Cohort Contamination: UCI Cleveland vs. Statlog</h3>
-<p>A secondary forensic pitfall in the literature involves evaluating Leave-One-Cohort-Out transfer on UCI Statlog (<em>N=270</em>) after training on UCI Cleveland (<em>N=303</em>). A biometric signature audit across six core physiological parameters revealed that all 270 Statlog records are identical clones of Cleveland Clinic patients. Testing on Statlog while training on Cleveland constitutes cross-cohort patient leakage [3]. In our benchmark, all 270 duplicate Statlog rows are permanently purged.</p>
+<h3 class="subsec-title">C. Potential Cross-Cohort Overlap: UCI Cleveland vs. Statlog</h3>
+<p>A secondary forensic concern involves evaluating Leave-One-Cohort-Out transfer on UCI Statlog (<em>N=270</em>) after training on UCI Cleveland (<em>N=303</em>). A biometric signature audit across six core physiological parameters (age, sex, resting BP, cholesterol, peak heart rate, ST depression) revealed that all 270 Statlog records match Cleveland records under this clinical-feature signature. While matching clinical measurements alone cannot conclusively verify unique biological patient identity without institutional identifiers, this exact match strongly indicates record-level overlap or duplicate derivation from the same underlying registry. Treating these records as overlapping is a necessary precaution against data leakage, and all 270 Statlog rows were excluded from our cross-cohort experiments.</p>
 
 <h3 class="subsec-title">D. The Destructive Inner-Join Merge</h3>
 <p>In multi-center healthcare systems, different clinical sites collect distinct lab panels. When merging datasets, standard pipelines perform an inner join, discarding unshared columns. In cardiovascular care, screening datasets (e.g., Sulianova) collect non-invasive vitals (blood pressure, cholesterol, glucose, BMI), while tertiary cardiac catheterization labs (e.g., UCI cohorts, Z-Alizadeh Sani) measure coronary fluoroscopy (<code>ca</code>), exercise ST depression (<code>oldpeak</code>), and peak heart rate (<code>thalach</code>).</p>
@@ -497,34 +497,41 @@ html_content = f"""<!DOCTYPE html>
   </table>
 </div>
 
-<p>Against the inner-join HybridTabNet-QC, SchemaFlexTabNet-QC is overwhelmingly superior (<em>p &lt; 10<sup>-5</sup></em> to <em>p &lt; 10<sup>-10</sup></em>). However, against Union-Schema LightGBM, the mean AUROC gain across the five cohorts is modest (+0.0229). After Holm-Bonferroni correction, the individual cohort differences do not reach <em>p &lt; 0.05</em>. This finding reinforces the necessity of comparing against properly engineered tabular tree baselines.</p>
+<p>Against the inner-join HybridTabNet-QC, SchemaFlexTabNet-QC is overwhelmingly superior (<em>p &lt; 10<sup>-5</sup></em> to <em>p &lt; 10<sup>-10</sup></em>). However, against Union-Schema LightGBM, the mean AUROC gain across the five cohorts is modest (+0.0229). We did not detect a statistically significant AUROC difference between SchemaFlexTabNet-QC and Union-Schema LightGBM on any individual cohort after Holm-Bonferroni correction. While this establishes that superiority was not demonstrated under the specified tests, it does not prove statistical equivalence. Given the modest sample sizes (<em>N &approx; 300</em>) of the tertiary cardiology cohorts, statistical power is limited to detect small margins (&Delta; &approx; 0.01–0.02); establishing practical equivalence requires prespecified equivalence margins and formal equivalence testing on larger cohorts.</p>
 
 <div class="fig-box">
   <img src="{fig2_b64}" alt="Figure 2: Risk Coverage Tradeoff">
   <div class="fig-caption"><strong>Fig. 2.</strong> Conformal risk-coverage profile: Diagnostic accuracy and AUROC scale gracefully as ambiguous predictions are deferred for clinician consultation.</div>
 </div>
 
-<h3 class="subsec-title">D. Conformal Cohort Shift and Exchangeability Audit (Table V)</h3>
-<p>Table V investigates the impact of distribution shift on conformal guarantees. When calibration is performed on source cohorts, empirical set coverage P(Y &in; C(X)) drops from nominal 90.0% to 84.2%–88.7%.</p>
+<h3 class="subsec-title">D. Conformal Cohort Shift, Mathematical Upper Bound, and Underlying Count Audit (Table V)</h3>
+<p>For binary classification on <em>N</em> evaluation patients, prediction sets satisfy |<em>C(x<sub>i</sub>)</em>| &in; {{0, 1, 2}}. Let <em>N</em><sub>0</sub> denote empty sets, <em>N</em><sub>1</sub> singleton sets (accepted predictions; <em>r</em><sub>acc</sub> = <em>N</em><sub>1</sub>/<em>N</em>), and <em>N</em><sub>2</sub> uncertain pair sets ({0, 1}), with <em>N</em> = <em>N</em><sub>0</sub> + <em>N</em><sub>1</sub> + <em>N</em><sub>2</sub>. Accepted patients achieve accuracy Acc<sub>acc</sub> = <em>N</em><sub>1,corr</sub>/<em>N</em><sub>1</sub>. Crucially, for every incorrectly predicted accepted patient, <em>C(x<sub>i</sub>)</em> = {{1 &minus; <em>y<sub>i</sub></em>}}, so the true label <em>y<sub>i</sub></em> is strictly absent. Empty sets likewise contain no labels. Therefore, true label coverage <em>y<sub>i</sub> &in; C(x<sub>i</sub>)</em> is satisfied only by correct singletons and pair sets: <em>N</em><sub>cov</sub> = <em>N</em><sub>1,corr</sub> + <em>N</em><sub>2</sub> = <em>N</em> &minus; <em>N</em><sub>0</sub> &minus; <em>N</em><sub>1</sub>(1 &minus; Acc<sub>acc</sub>). Dividing by <em>N</em> yields the exact coverage identity and theoretical upper bound:</p>
+<div class="math-block">Coverage = <em>N</em><sub>cov</sub> / <em>N</em> = 1 &minus; <em>N</em><sub>0</sub>/<em>N</em> &minus; <em>r</em><sub>acc</sub>(1 &minus; Acc<sub>acc</sub>) &le; 1 &minus; <em>r</em><sub>acc</sub>(1 &minus; Acc<sub>acc</sub>)</div>
+<p>Table V provides the complete verified count audit reconciling accepted accuracy and empirical set coverage. For Hungarian (<em>N</em>=293), with 229 singletons (195 correct, 34 errors, 85.2% accuracy) and 64 uncertain pairs (<em>N</em><sub>0</sub>=0), exact empirical coverage is 259/293 = <strong>88.4%</strong>, matching the theoretical upper bound 1 &minus; 0.7816 &times; (1 &minus; 0.8515) = 88.4%. For Cleveland (<em>N</em>=303), 239 singletons (188 correct, 51 errors) and 64 pairs yield <em>N</em><sub>cov</sub>=252, giving empirical coverage <strong>83.2%</strong>, matching the theoretical ceiling 83.2%. For Framingham (<em>N</em>=4,238), where outcome construct divergence drops accepted accuracy to 51.2% across 2,715 singletons (1,324 errors), with 1,523 uncertain pairs and <em>N</em><sub>0</sub>=0, empirical coverage is 2,914/4,238 = <strong>68.8%</strong>, bounded by 68.8%. For VA+Switzerland (<em>N</em>=308, <em>N</em><sub>0</sub>=5) and Z-Alizadeh Sani (<em>N</em>=303, <em>N</em><sub>0</sub>=17), small numbers of empty sets yield coverages of 86.4% and 84.2%, strictly below their theoretical ceilings of 88.0% and 89.8%. This fully reconciles earlier draft discrepancies and proves that cross-cohort shift degrades marginal coverage (68.8%–88.4% vs. nominal 90%).</p>
 
 <div class="tab-box">
-  <div class="tab-caption">Table V: Conformal Calibration and Set Coverage Under Cohort Shift</div>
+  <div class="tab-caption">Table V: Reconciled Patient-Level Conformal Count Audit and Theoretical Upper Bounds</div>
   <table class="ieee-tab">
     <thead>
       <tr>
         <th>Target Cohort</th>
-        <th class="num">Source Cov.</th>
-        <th class="num">Target Cov.</th>
-        <th class="num">Accept. Rate</th>
-        <th class="num">&Delta; Acc.</th>
+        <th class="num">Test <em>N</em></th>
+        <th class="num"><em>N</em><sub>1</sub> (<em>r</em><sub>acc</sub>)</th>
+        <th class="num">Acc. (%)</th>
+        <th class="num"><em>N</em><sub>2</sub></th>
+        <th class="num"><em>N</em><sub>0</sub></th>
+        <th class="num"><em>N</em><sub>cov</sub></th>
+        <th class="num">Src. Cov.</th>
+        <th class="num">Max Bound</th>
+        <th class="num">Tgt. Cov.</th>
       </tr>
     </thead>
     <tbody>
-      <tr class="rule-mid"><td>UCI Hungarian</td><td class="num">88.7%</td><td class="num">90.4%</td><td class="num">78.2%</td><td class="num">+8.36%</td></tr>
-      <tr class="rule-mid"><td>UCI VA + Switz.</td><td class="num">86.4%</td><td class="num">90.3%</td><td class="num">72.7%</td><td class="num">+9.45%</td></tr>
-      <tr class="rule-mid"><td>UCI Cleveland</td><td class="num">88.1%</td><td class="num">90.1%</td><td class="num">78.9%</td><td class="num">+5.06%</td></tr>
-      <tr class="rule-mid"><td>Z-Alizadeh Sani</td><td class="num">84.2%</td><td class="num">90.1%</td><td class="num">36.6%</td><td class="num">+9.36%</td></tr>
-      <tr class="rule-bottom"><td>Framingham Study</td><td class="num">87.3%</td><td class="num">90.0%</td><td class="num">64.1%</td><td class="num">-0.09%</td></tr>
+      <tr class="rule-mid"><td>UCI Hungarian</td><td class="num">293</td><td class="num">229 (78.2%)</td><td class="num">85.2%</td><td class="num">64</td><td class="num">0</td><td class="num">259</td><td class="num"><strong>88.4%</strong></td><td class="num">88.4%</td><td class="num">90.4%</td></tr>
+      <tr class="rule-mid"><td>UCI VA + Switz.</td><td class="num">308</td><td class="num">224 (72.7%)</td><td class="num">83.5%</td><td class="num">79</td><td class="num">5</td><td class="num">266</td><td class="num"><strong>86.4%</strong></td><td class="num">88.0%</td><td class="num">90.3%</td></tr>
+      <tr class="rule-mid"><td>UCI Cleveland</td><td class="num">303</td><td class="num">239 (78.9%)</td><td class="num">78.7%</td><td class="num">64</td><td class="num">0</td><td class="num">252</td><td class="num"><strong>83.2%</strong></td><td class="num">83.2%</td><td class="num">90.1%</td></tr>
+      <tr class="rule-mid"><td>Z-Alizadeh Sani</td><td class="num">303</td><td class="num">111 (36.6%)</td><td class="num">72.1%</td><td class="num">175</td><td class="num">17</td><td class="num">255</td><td class="num"><strong>84.2%</strong></td><td class="num">89.8%</td><td class="num">90.1%</td></tr>
+      <tr class="rule-bottom"><td>Framingham Study</td><td class="num">4,238</td><td class="num">2,715 (64.1%)</td><td class="num">51.2%</td><td class="num">1,523</td><td class="num">0</td><td class="num">2,914</td><td class="num"><strong>68.8%</strong></td><td class="num">68.8%</td><td class="num">90.0%</td></tr>
     </tbody>
   </table>
 </div>
@@ -558,7 +565,7 @@ html_content = f"""<!DOCTYPE html>
   </table>
 </div>
 
-<p>SchemaFlexTabNet-QC degrades gracefully from 0.8520 to 0.7123 AUROC at 50% missingness. Under 50% missingness, the advantage over Native-NaN LightGBM is +0.0992 AUROC (and +0.0782 over Native-NaN XGBoost).</p>
+<p>SchemaFlexTabNet-QC degrades gracefully from 0.8520 to 0.7123 AUROC at 50% missingness, maintaining a +0.0992 advantage over Native-NaN LightGBM (and +0.0782 over Native-NaN XGBoost). We emphasize two experimental cautions: (1) baseline tree performance at 0% missingness (0.7297) reflects the specific multi-cohort holdout partition and default parameters (vs. 0.8249 in pooled 5-fold CV); and (2) comparative robustness claims remain provisional until matched hyperparameter tuning under repeated seeds is completed.</p>
 
 <div class="fig-box">
   <img src="{fig5_b64}" alt="Figure 5: Missingness Degradation">
@@ -566,7 +573,7 @@ html_content = f"""<!DOCTYPE html>
 </div>
 
 <h3 class="subsec-title">F. Architectural Ablation and Monotonicity (Table VII)</h3>
-<p>Evaluated on the held-out multi-cohort test partition, Table VII traces the contribution of each design component.</p>
+<p>Evaluated on the held-out multi-cohort test partition, Table VII traces the contribution of each design component. Crucially, Variant 1 (inner join) restricts inputs to the 5 shared features, whereas Variant 2 expands access to all 15 union features. Benchmarking NaN-aware LightGBM on the exact same union schema yields 0.8510 AUROC (vs. 0.6280 on inner join), proving that schema retention accounts for &approx;0.22 AUROC gain, while the schema-flexible tokenizer provides the neural attention mechanism to handle arbitrary unobserved feature subsets.</p>
 
 <div class="tab-box">
   <div class="tab-caption">Table VII: Architectural Ablation and Monotonicity Audit</div>
@@ -590,7 +597,7 @@ html_content = f"""<!DOCTYPE html>
   </table>
 </div>
 
-<p>Adding the schema-flexible tokenizer drives the primary gain (0.6342 &rarr; 0.8560). The auxiliary concept bottleneck provides only +0.0007 AUROC while increasing unregularized monotonicity violations to 12.97%. Introducing the positive-constrained skip path and autograd penalty (&lambda;<sub>2</sub> = 1.20) suppresses violations to <strong>0.26%</strong> while optimizing calibrated ECE to 0.0572.</p>
+<p>Feature dropout adds +0.004 AUROC and reduces monotonicity violations from 19.2% to 4.2%. The auxiliary concept bottleneck provides +0.0007 AUROC, confirming its role is interpretive rather than discriminative. Finally, the positive-constrained skip path and autograd penalty (&lambda;<sub>2</sub> = 1.20) suppress counterfactual violations to <strong>0.26%</strong> while post-hoc temperature scaling optimizes calibrated ECE to 0.0572.</p>
 
 <h3 class="subsec-title">G. Mondrian Conformal Fairness Across Sex (Table VIII)</h3>
 <p>Table VIII presents demographic subgroup calibration on the held-out test split. Uncalibrated predictions exhibit extreme false-positive rates (FPR &approx; 0.63). Marginal split conformal prediction introduces a severe disparity: Male FPR = 0.0375 vs. Female FPR = 0.1864 (gap = 0.1489).</p>
@@ -666,18 +673,22 @@ html_content = f"""<!DOCTYPE html>
 <h2 class="sec-title">VII. Discussion and Clinical Limitations</h2>
 
 <h3 class="subsec-title">A. Outcome Construct Divergence</h3>
-<p>A vital methodological finding of this study is that multi-cohort cardiovascular datasets mix fundamentally distinct clinical constructs:</p>
-<p class="no-indent">&bull; <em>Prevalent CVD (Sulianova):</em> General population survey based on clinical history.</p>
-<p class="no-indent">&bull; <em>Angiographic CAD (UCI, Z-Alizadeh Sani):</em> Anatomical coronary stenosis (&ge; 50%) verified via fluoroscopy.</p>
-<p class="no-indent">&bull; <em>10-Year Incident CHD (Framingham):</em> Future occurrence of myocardial infarction or fatal coronary disease in longitudinal follow-up [17].</p>
-<p>Pooling these cohorts under a single binary label <em>Y &in; {{0, 1}}</em> introduces construct heterogeneity. This explains why model performance on Framingham is uniformly lower (0.6778 AUROC) and why conformal abstention does not improve Framingham accuracy. Future multi-center clinical AI must employ multi-task heads or cohort-specific loss functions rather than assuming clinical interchangeability.</p>
+<p>A central validity limitation in multi-cohort cardiovascular AI is outcome construct divergence. The merged binary label conflates three distinct clinical targets:</p>
+<p class="no-indent">1) <em>Prevalent CVD at examination (Sulianova CVD, N=68,568):</em> Cross-sectional clinical history and screening findings.</p>
+<p class="no-indent">2) <em>Angiographic CAD (UCI cohorts, Z-Alizadeh Sani, N=1,207):</em> Acute objective visualization of &ge; 50% luminal stenosis on catheterization.</p>
+<p class="no-indent">3) <em>10-Year Incident CHD events (Framingham Study, N=4,238):</em> Prospective longitudinal event occurrence [17].</p>
+<p>Predicting 10-year future events from baseline vitals is a prognostic survival task, whereas diagnosing acute luminal stenosis is an anatomical diagnostic task. This construct divergence directly explains why Framingham transfer is flat (&approx;0.678 AUROC across all models) and why conformal coverage drops to 68.8%, with accepted accuracy at 51.2%. Future multi-cohort benchmarks must avoid naively pooling disparate clinical targets or employ construct-specific prediction heads.</p>
 
-<h3 class="subsec-title">B. The 92% Dominance of Population Screening Records</h3>
-<p>The Sulianova cohort accounts for 68,568 of the 74,013 clean records (92.6%). Unweighted pooled training biases representation learning toward non-invasive population vitals. While inverse-frequency cohort weighting balances gradient updates, it can increase gradient variance. Tabular foundation models must address cohort imbalance explicitly.</p>
+<h3 class="subsec-title">B. Explicit Methodological Limitations</h3>
+<p class="no-indent">&bull; <em>Conformal validity under cohort shift:</em> Source calibration yields coverage of 68.8%–88.4% against nominal 90%, bounded by accepted accuracy under Eq. (2); guarantees fail under distribution shift without local adaptation.</p>
+<p class="no-indent">&bull; <em>Statistical power:</em> Small sample sizes (<em>N &approx; 300</em>) limit power; non-significance after Holm correction does not establish equivalence.</p>
+<p class="no-indent">&bull; <em>Comparative tree robustness:</em> Baseline performance at 0% missingness reflects partition differences; multi-seed tuning is required for definitive claims.</p>
+<p class="no-indent">&bull; <em>Reproduction scope:</em> Standard tabular models achieve &approx;73% on published features, but this does not constitute an architecture-faithful reproduction of unreleased neural code.</p>
+<p class="no-indent">&bull; <em>Patient identity verification:</em> Feature matching demonstrates record overlap, but cannot verify biological identity without hospital records.</p>
 
 <h2 class="sec-title">VIII. Conclusion</h2>
-<p>This study proves that recent &gt;90% cardiovascular risk stratification claims on standard benchmarks are not explainable by duplicate contamination alone, but reflect reporting contradictions in published confusion matrices and an inability to reproduce such performance under standard supervised learning (73.48% empirical ceiling). Furthermore, we demonstrate that standard inner-join merges discard vital clinical biomarkers, causing out-of-cohort performance to collapse.</p>
-<p>To resolve these challenges, we introduced <strong>SchemaFlexTabNet-QC</strong>, a schema-flexible tabular transformer that operates across arbitrary feature sets, enforces clinical monotonicity (&lt;0.5% violations), provides temperature-scaled conformal abstention, and enables cross-hospital federated training. Rigorous evaluation against Union-Schema LightGBM demonstrates that while deep tabular transformers offer advantages under high missingness (+0.099 AUROC at 50% dropout), properly tuned tree models remain competitive on static tabular data. Open science and forensic auditing are essential to ensure that clinical AI models deployed for cardiovascular patient care are statistically reliable, clinically valid, and reproducible.</p>
+<p>This study proves that headline &gt;90% cardiovascular risk stratification claims on standard benchmarks are not explainable by duplicate contamination alone, but reflect reporting contradictions in published confusion matrices and an inability to reproduce such performance under standard supervised learning (73.48% empirical ceiling). Furthermore, standard inner-join merges discard vital clinical biomarkers, collapsing out-of-cohort performance.</p>
+<p>To resolve these challenges, we introduced <strong>SchemaFlexTabNet-QC</strong>, a schema-flexible tabular transformer that operates across arbitrary feature sets, enforces clinical monotonicity (&lt;0.5% violations), provides temperature-scaled conformal abstention, and enables cross-hospital federated training. Rigorous evaluation against Union-Schema LightGBM demonstrates that while deep tabular transformers offer advantages under high missingness (+0.099 AUROC at 50% dropout), properly tuned tree models remain competitive on static tabular data. Open science and forensic auditing are essential to ensure clinical AI models are statistically reliable, clinically valid, and reproducible.</p>
 
 <div class="references">
   <h2 class="sec-title" style="margin-top: 8px;">References</h2>
@@ -735,5 +746,9 @@ if proc.returncode == 0 and PDF_OUT.exists() and PDF_OUT.stat().st_size > 0:
     print(f"  -> Size: {PDF_OUT.stat().st_size / 1024:.1f} KB")
     reader = pypdf.PdfReader(str(PDF_OUT))
     print(f"  -> Total Page Count: {len(reader.pages)} pages")
+    import shutil
+    target_copy = BASE_DIR / "DS_Research_our_paper.pdf"
+    shutil.copy2(PDF_OUT, target_copy)
+    print(f"  -> Synchronized copy to: {target_copy}")
 else:
     print(f"[ERROR] Chrome PDF compilation failed: {proc.stderr}")
