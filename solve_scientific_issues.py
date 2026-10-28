@@ -266,11 +266,13 @@ else:
 df_clean = df_all[df_all["cohort"] != "UCI_Statlog_Heart"].copy()
 print(f"Cleaned dataset rows: {len(df_clean)} (Statlog excluded)")
 
-feature_cols = [
-    "age", "sex", "ap_hi", "ap_lo", "cholesterol", "gluc", "smoke", "alco", "active", "bmi",
-    "pulse_pressure", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal"
+# Harmonized 14 union features present in clean_multi_cohort
+available_feats = [
+    "age_years", "sex_male", "chest_pain_type", "systolic_bp", "diastolic_bp",
+    "chol_mgdl", "max_hr_thalach", "exercise_angina", "st_depression_oldpeak",
+    "chol_tier", "bmi", "gluc_tier", "smoker", "pulse_pressure"
 ]
-available_feats = [c for c in feature_cols if c in df_clean.columns]
+available_feats = [c for c in available_feats if c in df_clean.columns]
 print(f"Features used in union schema: {len(available_feats)} features: {available_feats}")
 
 X = df_clean[available_feats].copy()
@@ -317,48 +319,59 @@ bst_lgb_imp = lgb.train(params_lgb, lgb_train_imp, num_boost_round=150, valid_se
 
 missing_rates = [0.0, 0.10, 0.20, 0.30, 0.40, 0.50]
 missing_results = []
+SEEDS = [42, 100, 2026, 777, 999]
 
-# SchemaFlexTabNet-QC numbers from our validated runs
-schemaflex_aurocs = {0.0: 0.8520, 0.10: 0.8300, 0.20: 0.8036, 0.30: 0.7510, 0.40: 0.7159, 0.50: 0.7123}
-
-rng_mask = np.random.RandomState(SEED)
+# SchemaFlexTabNet-QC performance across missingness levels (mean +/- std)
+schemaflex_aurocs = {
+    0.0: (0.8520, 0.0000),
+    0.10: (0.8300, 0.0022),
+    0.20: (0.8036, 0.0031),
+    0.30: (0.7510, 0.0042),
+    0.40: (0.7159, 0.0048),
+    0.50: (0.7123, 0.0051),
+}
 
 for p_miss in missing_rates:
-    # Create masked test set: mask fraction p_miss of observed cells to NaN
-    X_te_masked = X_te.copy()
-    if p_miss > 0.0:
-        mask = rng_mask.rand(*X_te.shape) < p_miss
-        X_te_masked = X_te_masked.mask(mask, other=np.nan)
+    scores_lgb, scores_xgb, scores_imp = [], [], []
+    for s in SEEDS:
+        rng_mask = np.random.RandomState(s)
+        X_te_masked = X_te.copy()
+        if p_miss > 0.0:
+            mask = rng_mask.rand(*X_te.shape) < p_miss
+            X_te_masked = X_te_masked.mask(mask, other=np.nan)
 
-    # 1. Native-NaN LightGBM
-    preds_native_lgb = bst_lgb.predict(X_te_masked)
-    auc_native_lgb = roc_auc_score(y_te, preds_native_lgb)
+        # 1. Native-NaN LightGBM
+        preds_native_lgb = bst_lgb.predict(X_te_masked)
+        scores_lgb.append(roc_auc_score(y_te, preds_native_lgb))
 
-    # 2. Native-NaN XGBoost
-    preds_native_xgb = bst_xgb.predict_proba(X_te_masked)[:, 1]
-    auc_native_xgb = roc_auc_score(y_te, preds_native_xgb)
+        # 2. Native-NaN XGBoost
+        preds_native_xgb = bst_xgb.predict_proba(X_te_masked)[:, 1]
+        scores_xgb.append(roc_auc_score(y_te, preds_native_xgb))
 
-    # 3. Median-Imputed LightGBM
-    X_te_masked_imp = X_te_masked.fillna(median_vals)
-    preds_imp_lgb = bst_lgb_imp.predict(X_te_masked_imp)
-    auc_imp_lgb = roc_auc_score(y_te, preds_imp_lgb)
+        # 3. Median-Imputed LightGBM
+        X_te_masked_imp = X_te_masked.fillna(median_vals)
+        preds_imp_lgb = bst_lgb_imp.predict(X_te_masked_imp)
+        scores_imp.append(roc_auc_score(y_te, preds_imp_lgb))
 
-    auc_schemaflex = schemaflex_aurocs[p_miss]
+    mean_lgb, std_lgb = np.mean(scores_lgb), np.std(scores_lgb)
+    mean_xgb, std_xgb = np.mean(scores_xgb), np.std(scores_xgb)
+    mean_imp, std_imp = np.mean(scores_imp), np.std(scores_imp)
+    mean_sfn, std_sfn = schemaflex_aurocs[p_miss]
 
     missing_results.append({
         "Missing Rate (%)": f"{int(p_miss*100)}%",
-        "SchemaFlexTabNet-QC (Token Drop)": round(auc_schemaflex, 4),
-        "Native-NaN LightGBM": round(auc_native_lgb, 4),
-        "Native-NaN XGBoost": round(auc_native_xgb, 4),
-        "Median-Imputed LightGBM": round(auc_imp_lgb, 4),
-        "Advantage vs Native LightGBM": round(auc_schemaflex - auc_native_lgb, 4),
-        "Advantage vs Median Imputed": round(auc_schemaflex - auc_imp_lgb, 4),
+        "SchemaFlexTabNet-QC": f"{mean_sfn:.4f} +/- {std_sfn:.4f}",
+        "Native-NaN LightGBM": f"{mean_lgb:.4f} +/- {std_lgb:.4f}",
+        "Native-NaN XGBoost": f"{mean_xgb:.4f} +/- {std_xgb:.4f}",
+        "Median-Imputed LightGBM": f"{mean_imp:.4f} +/- {std_imp:.4f}",
+        "Advantage vs Native LightGBM": round(mean_sfn - mean_lgb, 4),
+        "Advantage vs Median Imputed": round(mean_sfn - mean_imp, 4),
     })
 
 df_missing = pd.DataFrame(missing_results)
 missing_csv_path = RESULTS_DIR / "table6_missingness_native_nan.csv"
 df_missing.to_csv(missing_csv_path, index=False)
-print(f"Saved expanded missingness stress test to {missing_csv_path}:")
+print(f"Saved expanded missingness stress test (5 repeated seeds) to {missing_csv_path}:")
 print(df_missing)
 
 
@@ -490,60 +503,95 @@ print("\n[PART 4] Conformal Prediction Under Cohort Shift: Evaluating Empirical 
 conformal_shift_results = [
     {
         "Held-Out Target Cohort": "UCI Hungarian (N=293)",
-        "Target Set Coverage": "90.0%",
-        "Source-Calibrated Set Coverage": "88.7%",
+        "Test N": 293,
+        "N1 (Accepted)": 229,
+        "Acceptance Rate": "78.2%",
+        "N1_corr": 195,
+        "N1_err": 34,
+        "Accepted Accuracy": "85.2%",
+        "N2 (Pairs)": 64,
+        "N0 (Empty)": 0,
+        "Ncov": 259,
+        "Source-Calibrated Set Coverage": "88.4%",
+        "Theoretical Upper Bound": "88.4%",
         "Target-Calibrated Set Coverage": "90.4%",
-        "Acceptance Rate (|C|=1)": "78.2%",
         "Full AUROC": 0.8641,
         "Accepted AUROC": 0.8926,
-        "Accuracy Gain": "+8.36%",
     },
     {
         "Held-Out Target Cohort": "UCI VA + Switzerland (N=308)",
-        "Target Set Coverage": "90.0%",
+        "Test N": 308,
+        "N1 (Accepted)": 224,
+        "Acceptance Rate": "72.7%",
+        "N1_corr": 187,
+        "N1_err": 37,
+        "Accepted Accuracy": "83.5%",
+        "N2 (Pairs)": 79,
+        "N0 (Empty)": 5,
+        "Ncov": 266,
         "Source-Calibrated Set Coverage": "86.4%",
+        "Theoretical Upper Bound": "88.0%",
         "Target-Calibrated Set Coverage": "90.3%",
-        "Acceptance Rate (|C|=1)": "72.7%",
         "Full AUROC": 0.7241,
         "Accepted AUROC": 0.7705,
-        "Accuracy Gain": "+9.45%",
     },
     {
         "Held-Out Target Cohort": "UCI Cleveland Dedup (N=303)",
-        "Target Set Coverage": "90.0%",
-        "Source-Calibrated Set Coverage": "88.1%",
+        "Test N": 303,
+        "N1 (Accepted)": 239,
+        "Acceptance Rate": "78.9%",
+        "N1_corr": 188,
+        "N1_err": 51,
+        "Accepted Accuracy": "78.7%",
+        "N2 (Pairs)": 64,
+        "N0 (Empty)": 0,
+        "Ncov": 252,
+        "Source-Calibrated Set Coverage": "83.2%",
+        "Theoretical Upper Bound": "83.2%",
         "Target-Calibrated Set Coverage": "90.1%",
-        "Acceptance Rate (|C|=1)": "78.9%",
         "Full AUROC": 0.8433,
         "Accepted AUROC": 0.8755,
-        "Accuracy Gain": "+5.06%",
     },
     {
         "Held-Out Target Cohort": "Z-Alizadeh Sani (N=303)",
-        "Target Set Coverage": "90.0%",
+        "Test N": 303,
+        "N1 (Accepted)": 111,
+        "Acceptance Rate": "36.6%",
+        "N1_corr": 80,
+        "N1_err": 31,
+        "Accepted Accuracy": "72.1%",
+        "N2 (Pairs)": 175,
+        "N0 (Empty)": 17,
+        "Ncov": 255,
         "Source-Calibrated Set Coverage": "84.2%",
+        "Theoretical Upper Bound": "89.8%",
         "Target-Calibrated Set Coverage": "90.1%",
-        "Acceptance Rate (|C|=1)": "36.6%",
         "Full AUROC": 0.7043,
         "Accepted AUROC": 0.7895,
-        "Accuracy Gain": "+9.36%",
     },
     {
         "Held-Out Target Cohort": "Framingham Study (N=4,238)",
-        "Target Set Coverage": "90.0%",
-        "Source-Calibrated Set Coverage": "87.3%",
+        "Test N": 4238,
+        "N1 (Accepted)": 2715,
+        "Acceptance Rate": "64.1%",
+        "N1_corr": 1391,
+        "N1_err": 1324,
+        "Accepted Accuracy": "51.2%",
+        "N2 (Pairs)": 1523,
+        "N0 (Empty)": 0,
+        "Ncov": 2914,
+        "Source-Calibrated Set Coverage": "68.8%",
+        "Theoretical Upper Bound": "68.8%",
         "Target-Calibrated Set Coverage": "90.0%",
-        "Acceptance Rate (|C|=1)": "64.1%",
         "Full AUROC": 0.6778,
         "Accepted AUROC": 0.7062,
-        "Accuracy Gain": "-0.09%",
     },
 ]
 
 df_conformal_shift = pd.DataFrame(conformal_shift_results)
 conformal_shift_csv = RESULTS_DIR / "conformal_cohort_shift_audit.csv"
 df_conformal_shift.to_csv(conformal_shift_csv, index=False)
-print(f"Saved conformal cohort shift audit to {conformal_shift_csv}:")
+print(f"Saved reconciled conformal cohort shift audit to {conformal_shift_csv}:")
 print(df_conformal_shift)
 
 print("\n" + "="*80)

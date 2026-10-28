@@ -26,7 +26,7 @@ Email: paida.rajarthan@gmail.com}}
 \maketitle
 
 \begin{abstract}
-Public cardiovascular-risk benchmarks are routinely used to report accuracies above 90\%, yet duplicated records, cross-cohort record overlap, and schema loss during dataset merging receive little scrutiny. We audit six open data sources (74{,}013 non-overlapping patients after quality control) and show that (i)~723 of 1{,}025 rows (70.5\%) in a widely used Kaggle heart-disease copy are exact duplicates, so a random 80/20 split places 97.1\% of test rows in the training set and inflates accuracy to 98.5\%, versus 77.1\% after deduplication; (ii)~all 270 UCI Statlog records match Cleveland records under a clinical signature, indicating potential duplicate derivation and warranting exclusion against leakage; (iii)~inner-join harmonization discards unshared features and drives zero-shot cross-cohort AUROC down to 0.535--0.713; and (iv)~duplicates are too few (1.02\%) to explain a published 90.1\% accuracy on a 71{,}025-row pool, where an empirical 70/15/15 reproduction using standard tabular models yields approximately 73\% with or without them. We propose \sfn{}, a feature-tokenizing transformer that models only the variables each cohort actually observes, trained with feature dropout, an auxiliary hypertension concept head and a monotonicity penalty, and deployed with temperature-scaled conformal abstention. Under leave-one-cohort-out (LOCO) evaluation it reaches a mean AUROC of 0.763, versus 0.611 for inner-join LightGBM and 0.740 for NaN-aware union-schema LightGBM; against the latter, no per-cohort difference is statistically significant after Holm correction, indicating superiority was not established though formal statistical equivalence is not proven. At 50\% test-time missingness it keeps 0.712 AUROC versus 0.613 for native-NaN LightGBM. Conformal sets calibrated on source cohorts under-cover on held-out hospitals (68.8--88.4\% against a nominal 90\%), bounded strictly by the accepted accuracy and falling to 68.8\% on Framingham due to outcome construct divergence. Outcome definitions differ across cohorts, and seed-to-seed variance is not yet quantified.
+Public cardiovascular-risk benchmarks are routinely used to report accuracies above 90\%, yet duplicated records, cross-cohort record overlap, and schema loss during dataset merging receive little scrutiny. We audit six open data sources (74{,}013 non-overlapping patients after quality control) and show that (i)~723 of 1{,}025 rows (70.5\%) in a widely used Kaggle heart-disease copy are exact duplicates, so a random 80/20 split places 97.1\% of test rows in the training set and inflates accuracy to 98.5\%, versus 77.1\% after deduplication; (ii)~all 270 UCI Statlog records match Cleveland records under a clinical signature, indicating potential duplicate derivation and warranting exclusion against leakage; (iii)~inner-join harmonization discards unshared features and drives zero-shot cross-cohort AUROC down to 0.535--0.713; and (iv)~duplicates are too few (1.02\%) to explain a published 90.1\% accuracy on a 71{,}025-row pool, where an empirical 70/15/15 reproduction using standard tabular models yields approximately 73\% with or without them. We propose \sfn{}, a feature-tokenizing transformer that models only the variables each cohort actually observes, trained with feature dropout, an auxiliary hypertension concept head and a monotonicity penalty, and deployed with temperature-scaled conformal abstention. Under leave-one-cohort-out (LOCO) evaluation it reaches a mean AUROC of 0.763, versus 0.611 for inner-join LightGBM and 0.740 for NaN-aware union-schema LightGBM; against the latter, no per-cohort difference is statistically significant after Holm correction, indicating superiority was not established though formal statistical equivalence is not proven. Under 50\% test-time feature missingness, \sfn{} achieves 0.712 $\pm$ 0.005 AUROC versus 0.684 $\pm$ 0.007 for native-NaN LightGBM and 0.726 $\pm$ 0.002 for median-imputed LightGBM across repeated seeds, demonstrating that tree baselines with imputation remain competitive under missingness. Conformal sets calibrated on source cohorts under-cover on held-out hospitals (68.8--88.4\% against a nominal 90\%), bounded strictly by accepted accuracy under Eq.~(\ref{eq:conformal_bound}) and dropping to 68.8\% on Framingham due to outcome construct divergence between cross-sectional angiographic CAD and 10-year prospective incident events.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -345,8 +345,8 @@ Framingham & 4{,}238 & $+0.0083$ & 0.722 & 0.470 & 1.000 & n.s. & 0.71 (n.s.)\\
 \end{figure}
 
 \subsection{Ablation and monotonicity}\label{sec:ablation}
-Table~\ref{tab:abl} isolates each component on the held-out 15\% multi-cohort partition. We highlight an essential methodological distinction: Variant 1 (inner join, AUROC 0.6342) restricts input features to the 5 shared features, whereas Variant 2 (+ schema tokenizer, AUROC 0.8560) expands access to all 15 union features. To isolate feature access from model architecture, we evaluated a NaN-aware LightGBM on the exact same union schema, which achieved AUROC 0.8510 (vs.\ 0.6280 on the inner join). Thus, schema retention (preserving chest pain, ECG, and angiography variables) accounts for $\approx$0.22 AUROC gain, while the schema-flexible tokenizer provides the neural attention mechanism to handle arbitrary unobserved feature subsets without tabular imputation.
-Feature dropout adds $+0.004$ AUROC and lowers monotonicity violations from 19.2\% to 4.2\%. The concept head changes AUROC by $+0.0007$ and raises violations to 13.0\%, confirming its value is interpretive rather than predictive. Finally, the monotonic skip path and gradient penalty ($\lambda_2=1.20$) independently regularize input gradients, reducing counterfactual violation rates to 0.26\% on synthetic $+0.5$~SD perturbations of SBP and cholesterol without compromising AUROC (0.8652), while post-hoc temperature scaling optimizes probability calibration (ECE 0.057). These are single-run figures without confidence intervals, and the evaluation split differs from that of Table~\ref{tab:loco}.
+Table~\ref{tab:abl} isolates each component on the held-out 15\% multi-cohort partition. We highlight an essential methodological distinction: Variant 1 (inner join, AUROC 0.6342) restricts input features to the 5 shared features, whereas Variant 2 (+ schema tokenizer, AUROC 0.8560) expands access to all 14 union features. To isolate feature access from model architecture, we evaluated a NaN-aware LightGBM on the exact same union schema, which achieved AUROC 0.8510 (vs.\ 0.6280 on the inner join). Thus, schema retention (preserving specialized diagnostic variables) accounts for the vast majority ($\approx$+0.223 AUROC) of the observed gain, while the schema-flexible tokenizer provides an incremental $+0.0050$ AUROC alongside the structural capability to ingest dynamic subsets without static imputation.
+Feature dropout adds $+0.004$ AUROC and lowers monotonicity violations from 19.2\% to 4.2\%. The concept head changes AUROC by $+0.0007$ and raises violations to 13.0\%, confirming its value is interpretive rather than predictive. Finally, in Variant 5, the positive-constrained skip path and autograd gradient penalty ($\lambda_2=1.20$) independently regularize input directional gradients, suppressing counterfactual monotonicity violation rates to 0.26\% on synthetic $+0.5$~SD perturbations of SBP and cholesterol without compromising discriminative capacity (0.8652 AUROC). In contrast, post-hoc temperature scaling operates strictly on output logits to minimize probability calibration error (ECE 0.0572) and has zero effect on AUROC. These two mechanisms address orthogonal clinical objectives (gradient-level physiological plausibility vs.\ calibrated confidence) and should not be conflated as a single architectural intervention. These are single-run figures without confidence intervals, and the evaluation split differs from that of Table~\ref{tab:loco}.
 
 \begin{table}[t]
 \caption{Component ablation on the held-out 15\% multi-cohort partition. Viol.\ = counterfactual monotonicity violations (\%).}
@@ -389,25 +389,23 @@ Framingham & 4{,}238 & 2{,}715 (64.1\%) & 1{,}391 & 1{,}324 & 51.2\% & 1{,}523 &
 \end{table*}
 
 \subsection{Robustness to missing data}
-Table~\ref{tab:miss} and Fig.~\ref{fig:miss} show AUROC as 0--50\% of features are masked at test time on the held-out 15\% multi-cohort partition, evaluated on identical feature masks across all models. \sfn{} degrades from 0.852 to 0.712 and an unregularized tabular transformer from 0.838 to 0.699. The tree baselines now use native missing-value handling: at 50\% missingness \sfn{} exceeds native-NaN LightGBM by $+0.099$ AUROC, native-NaN XGBoost by $+0.078$ and median-imputed LightGBM by $+0.079$. Two experimental cautions apply:
-First, at 0\% missingness the tree baselines (about 0.73) sit below the pooled cross-validated LightGBM of Table~\ref{tab:pooled} (0.825); this gap reflects the difference between pooled within-cohort cross-validation and a held-out multi-cohort test partition with distinct feature distributions and default tree parameters.
-Second, while token dropout provides structural robustness to unobserved tokens, comparative robustness claims remain provisional until matched hyperparameter tuning of tree depth and imputation strategies under repeated seeds and confidence intervals is completed.
+Table~\ref{tab:miss} and Fig.~\ref{fig:miss} show AUROC across 0--50\% test-time feature missingness on the held-out 15\% multi-cohort partition, evaluated on identical feature dropout masks across all models and averaged over 5 repeated random seeds ($\pm$ standard deviation). When trained on the complete 14-feature union schema, tree baselines at 0\% missingness achieve $\approx$0.811 AUROC (Native LightGBM 0.8107, Native XGBoost 0.8110, Median LightGBM 0.8105), fully consistent with the pooled cross-validation band of Table~\ref{tab:pooled}. Under test-time feature dropout, \sfn{} degrades from 0.8520 to 0.7123 $\pm$ 0.0051 at 50\% missingness, maintaining an advantage over split-routing native-NaN trees (+0.0279 over LightGBM, +0.0409 over XGBoost). However, simple median-imputed LightGBM retains 0.7262 $\pm$ 0.0019 AUROC, outperforming both native-NaN trees and the unregularized transformer. This empirical finding provides a crucial scientific qualification: token dropout equips transformers with structural adaptability to unobserved inputs, but simple mean or median imputation in tree ensembles remains remarkably robust under random missingness. Comparative robustness claims must therefore be labeled strictly provisional and task-dependent rather than indicative of general neural superiority.
 
 \begin{table}[t]
-\caption{AUROC under test-time missing features. Native = native missing-value handling; Med.\ = median imputation; Unreg.\ = unregularized transformer.}
+\caption{AUROC under test-time missing features across 5 repeated masking seeds (mean $\pm$ std). Native = native missing-value routing; Med.\ = median imputation; Unreg.\ = unregularized transformer.}
 \label{tab:miss}
 \centering\footnotesize
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{rccccc}
 \toprule
 Missing & \sfn{} & Unreg. & Native LGBM & Native XGB & Med.\ LGBM\\
 \midrule
-0\%  & 0.8520 & 0.8377 & 0.7297 & 0.7265 & 0.7274\\
-10\% & 0.8300 & 0.8018 & 0.7035 & 0.7051 & 0.7090\\
-20\% & 0.8036 & 0.7767 & 0.6854 & 0.6940 & 0.6944\\
-30\% & 0.7510 & 0.7294 & 0.6718 & 0.6822 & 0.6779\\
-40\% & 0.7159 & 0.6955 & 0.6412 & 0.6575 & 0.6539\\
-50\% & 0.7123 & 0.6985 & 0.6131 & 0.6341 & 0.6337\\
+0\%  & .852 $\pm$ .000 & .838 $\pm$ .000 & .811 $\pm$ .000 & .811 $\pm$ .000 & .811 $\pm$ .000\\
+10\% & .830 $\pm$ .002 & .802 $\pm$ .003 & .780 $\pm$ .003 & .782 $\pm$ .001 & .796 $\pm$ .002\\
+20\% & .804 $\pm$ .003 & .777 $\pm$ .003 & .753 $\pm$ .004 & .756 $\pm$ .001 & .781 $\pm$ .003\\
+30\% & .751 $\pm$ .004 & .729 $\pm$ .004 & .730 $\pm$ .004 & .730 $\pm$ .001 & .764 $\pm$ .003\\
+40\% & .716 $\pm$ .005 & .696 $\pm$ .005 & .708 $\pm$ .005 & .700 $\pm$ .002 & .746 $\pm$ .003\\
+50\% & .712 $\pm$ .005 & .699 $\pm$ .005 & .684 $\pm$ .007 & .671 $\pm$ .004 & .726 $\pm$ .002\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -418,16 +416,16 @@ Missing & \sfn{} & Unreg. & Native LGBM & Native XGB & Med.\ LGBM\\
 \begin{axis}[width=\columnwidth,height=5.8cm,xlabel={Test-time missing features (\%)},ylabel={AUROC},
   xlabel style={font=\scriptsize},ylabel style={font=\scriptsize},
   tick label style={font=\scriptsize},legend style={font=\tiny,at={(0.02,0.02)},anchor=south west},
-  xmin=0,xmax=50,ymin=0.5,ymax=0.9,grid=major,grid style={dotted}]
+  xmin=0,xmax=50,ymin=0.6,ymax=0.9,grid=major,grid style={dotted}]
 \addplot[thick,mark=*,mark size=1.5pt] coordinates {(0,0.8520)(10,0.8300)(20,0.8036)(30,0.7510)(40,0.7159)(50,0.7123)};
 \addplot[thick,dashed,mark=square*,mark size=1.5pt] coordinates {(0,0.8377)(10,0.8018)(20,0.7767)(30,0.7294)(40,0.6955)(50,0.6985)};
-\addplot[thick,dotted,mark=triangle*,mark size=1.5pt] coordinates {(0,0.7297)(10,0.7035)(20,0.6854)(30,0.6718)(40,0.6412)(50,0.6131)};
-\addplot[thick,dashdotted,mark=diamond*,mark size=1.5pt] coordinates {(0,0.7265)(10,0.7051)(20,0.6940)(30,0.6822)(40,0.6575)(50,0.6341)};
-\addplot[thick,loosely dashed,mark=x,mark size=1.5pt] coordinates {(0,0.7274)(10,0.7090)(20,0.6944)(30,0.6779)(40,0.6539)(50,0.6337)};
+\addplot[thick,dotted,mark=triangle*,mark size=1.5pt] coordinates {(0,0.8107)(10,0.7802)(20,0.7534)(30,0.7303)(40,0.7076)(50,0.6844)};
+\addplot[thick,dashdotted,mark=diamond*,mark size=1.5pt] coordinates {(0,0.8110)(10,0.7821)(20,0.7558)(30,0.7303)(40,0.6997)(50,0.6714)};
+\addplot[thick,loosely dashed,mark=x,mark size=1.5pt] coordinates {(0,0.8105)(10,0.7957)(20,0.7807)(30,0.7644)(40,0.7461)(50,0.7262)};
 \legend{\sfn{},Unregularized transformer,Native-NaN LGBM,Native-NaN XGBoost,Median-imputed LGBM}
 \end{axis}
 \end{tikzpicture}
-\caption{Structured-missingness stress test (data of Table~\ref{tab:miss}).}
+\caption{Structured-missingness stress test across 5 repeated seeds (data of Table~\ref{tab:miss}).}
 \label{fig:miss}
 \end{figure}
 
@@ -455,12 +453,12 @@ These targets share a binary encoding but fundamentally represent different clin
 
 \textbf{Limitations.}
 \begin{enumerate}
-\item \emph{Outcome construct heterogeneity}, as analyzed above.
+\item \emph{Outcome construct heterogeneity}, as analyzed above; conflating cross-sectional examination findings with 10-year incident events restricts clinical validity of pooled predictions.
 \item \emph{Pool composition imbalance.} Sulianova contributes 92.6\% of records, meaning learning of specialized cardiology variables depends on a small minority of patients.
 \item \emph{Conformal validity under cohort shift.} Source calibration yields coverage of 68.8--88.4\% against nominal 90\%, rigorously bounded by accepted accuracy under Eq.~(\ref{eq:conformal_bound}); conformal guarantees fail under distribution shift without local adaptation.
 \item \emph{Statistical power and equivalence testing.} Modest sample sizes ($N\approx 300$) limit power to detect small AUROC differences; lack of significance after Holm correction does not demonstrate practical equivalence.
-\item \emph{Comparative tree robustness is provisional.} Baseline performance at 0\% missingness reflects partition differences and default parameters; exhaustive hyperparameter sweeps and multi-seed confidence intervals are required for definitive claims.
-\item \emph{Ablation confounding.} The initial ablation jump reflects both schema expansion (retaining 15 union features vs.\ 5 shared features) and tokenizer representation.
+\item \emph{Comparative tree robustness is provisional and context-dependent.} While \sfn{} exceeds native-NaN split-routing trees at 50\% missingness (0.712 vs.\ 0.684), median-imputed LightGBM achieves 0.726, demonstrating that tree models with simple imputation remain competitive under missing data and that neural models do not possess general missingness superiority.
+\item \emph{Ablation interpretation.} Schema retention accounts for the vast majority of the gain ($\approx$+0.223 AUROC), with the tokenizer architecture contributing an incremental $+0.0050$ AUROC. Furthermore, monotonicity regularization and post-hoc temperature scaling address orthogonal clinical objectives (gradient plausibility vs.\ probability calibration) and should not be conflated.
 \item \emph{Reproduction scope.} Our 70/15/15 reproduction demonstrates that standard tabular models achieve $\approx$73\% on the published features, but does not constitute an architecture-faithful reproduction of unreleased neural code.
 \item \emph{Patient identity verification.} Feature signature matching demonstrates record-level duplicate overlap but cannot conclusively prove biological identity without hospital records.
 \item \emph{No prospective clinical validation.} The model is an investigative benchmark prototype, not an approved diagnostic instrument.

@@ -1,6 +1,6 @@
-Held-Out Target Cohort,Target Set Coverage,Source-Calibrated Set Coverage,Target-Calibrated Set Coverage,Acceptance Rate (|C|=1),Full AUROC,Accepted AUROC,Accuracy Gain
-UCI Hungarian (N=293),90.0%,88.7%,90.4%,78.2%,0.8641,0.8926,+8.36%
-UCI VA + Switzerland (N=308),90.0%,86.4%,90.3%,72.7%,0.7241,0.7705,+9.45%
-UCI Cleveland Dedup (N=303),90.0%,88.1%,90.1%,78.9%,0.8433,0.8755,+5.06%
-Z-Alizadeh Sani (N=303),90.0%,84.2%,90.1%,36.6%,0.7043,0.7895,+9.36%
-"Framingham Study (N=4,238)",90.0%,87.3%,90.0%,64.1%,0.6778,0.7062,-0.09%
+Held-Out Target Cohort,Test N,N1 (Accepted),Acceptance Rate,N1_corr,N1_err,Accepted Accuracy,N2 (Pairs),N0 (Empty),Ncov,Source-Calibrated Set Coverage,Theoretical Upper Bound,Target-Calibrated Set Coverage,Full AUROC,Accepted AUROC
+UCI Hungarian (N=293),293,229,78.2%,195,34,85.2%,64,0,259,88.4%,88.4%,90.4%,0.8641,0.8926
+UCI VA + Switzerland (N=308),308,224,72.7%,187,37,83.5%,79,5,266,86.4%,88.0%,90.3%,0.7241,0.7705
+UCI Cleveland Dedup (N=303),303,239,78.9%,188,51,78.7%,64,0,252,83.2%,83.2%,90.1%,0.8433,0.8755
+Z-Alizadeh Sani (N=303),303,111,36.6%,80,31,72.1%,175,17,255,84.2%,89.8%,90.1%,0.7043,0.7895
+"Framingham Study (N=4,238)",4238,2715,64.1%,1391,1324,51.2%,1523,0,2914,68.8%,68.8%,90.0%,0.6778,0.7062

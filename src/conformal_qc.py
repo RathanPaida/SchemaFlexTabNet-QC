@@ -67,9 +67,14 @@ class SplitConformalAbstainer:
         self.q_hat = float(np.quantile(scores, q_level, method="higher"))
         return self.q_hat
 
-    def predict_with_abstention(self, probs_test: np.ndarray) -> Dict[str, np.ndarray]:
+    def predict_with_abstention(
+        self, probs_test: np.ndarray, y_test: Optional[np.ndarray] = None
+    ) -> Dict[str, object]:
         """
         Produces prediction sets and binary abstention flags for test patients.
+        Strictly distinguishes:
+          - acceptance_rate: fraction of singleton sets |C(X)| = 1 (r_acc)
+          - empirical_set_coverage: fraction where true label y \in C(X)
         """
         if self.q_hat is None:
             raise ValueError("SplitConformalAbstainer must be calibrated before predicting!")
@@ -84,8 +89,9 @@ class SplitConformalAbstainer:
 
         # Point prediction for confident samples: 1 if include_pos else 0
         point_preds = np.where(include_pos & ~include_neg, 1, 0)
+        acceptance_rate = float(np.mean(confident_mask))
 
-        return {
+        result = {
             "probs": probs_test,
             "include_pos": include_pos,
             "include_neg": include_neg,
@@ -93,5 +99,36 @@ class SplitConformalAbstainer:
             "abstain_mask": abstain_mask,
             "confident_mask": confident_mask,
             "point_preds": point_preds,
-            "coverage": float(np.mean(confident_mask)),
+            "acceptance_rate": acceptance_rate,
+            "coverage": acceptance_rate,  # Retained for backwards compatibility with legacy callers
         }
+
+        if y_test is not None:
+            y_arr = np.asarray(y_test)
+            covered = np.where(y_arr == 1, include_pos, include_neg)
+            n_total = len(y_arr)
+            n_0 = int(np.sum(set_size == 0))
+            n_1 = int(np.sum(set_size == 1))
+            n_2 = int(np.sum(set_size == 2))
+            n_1_corr = int(np.sum(confident_mask & (point_preds == y_arr)))
+            n_1_err = int(np.sum(confident_mask & (point_preds != y_arr)))
+            n_cov = int(np.sum(covered))
+
+            acc_accepted = (n_1_corr / n_1) if n_1 > 0 else 0.0
+            emp_coverage = n_cov / n_total if n_total > 0 else 0.0
+            max_bound = 1.0 - (n_1 / n_total) * (1.0 - acc_accepted)
+
+            result.update({
+                "empirical_set_coverage": emp_coverage,
+                "accepted_accuracy": acc_accepted,
+                "n_total": n_total,
+                "n_0": n_0,
+                "n_1": n_1,
+                "n_2": n_2,
+                "n_1_corr": n_1_corr,
+                "n_1_err": n_1_err,
+                "n_cov": n_cov,
+                "theoretical_upper_bound": max_bound,
+            })
+
+        return result
