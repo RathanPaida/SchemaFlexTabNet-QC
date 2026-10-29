@@ -1,4 +1,4 @@
 Experimental Setup,Cohort / Data,Features Used,Accuracy (%),AUROC,F1-Score,Brier Score,Integrity Status
-Baseline Paper Setup (Duplicated + Leaked Random Split),"Kaggle Heart (1,025 rows, 723 dups)",13 UCI Features (with data leakage),98.53658536585365,0.9980011422044547,0.9852216748768473,0.027255356855491412,INVALID: 723 exact duplicates contaminate train/test split
-Forensic Clean Setup (Deduplicated Patient-Level Split),UCI Cleveland De-duplicated (302 rows),13 UCI Features (clean test set),77.04918032786885,0.8593073593073594,0.7878787878787878,0.14847236608292821,VALID: Clean patient split on true unique cohort
-Naive Inner-Join Merge (Discarded 9 Vital Clinical Features),"Sulianova CVD (68,568 rows)","Only 4 Shared Features (age, sex, sbp, chol)",73.20673593694016,0.7943213187440132,0.7214067506147083,0.18271531890654183,VALID: True ceiling on massive examination cohort
+Baseline Paper Setup (Duplicated + Leaked Random Split),"Kaggle Heart Copy (1,025 rows, 723 dups)",13 UCI Features (with duplicate leakage),98.54,0.998,0.9852,0.0273,INVALID: 723 exact duplicates contaminate train/test split
+Forensic Clean Setup (Deduplicated Patient-Level Split),Kaggle Heart Deduplicated (302 unique patients),13 UCI Features (clean test partition),77.05,0.8593,0.7879,0.1485,VALID: Clean patient split on true unique cohort
+Naive Inner-Join Merge (Discarded 9 Vital Clinical Features),"Sulianova CVD (68,568 clean rows)","Only 4 Shared Features (age, sex, sbp, chol)",73.21,0.7943,0.7214,0.1827,VALID: True ceiling on massive examination cohort

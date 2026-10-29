@@ -1,3 +1,6 @@
-Protocol,Model,Coverage (%),AUROC,AUROC_95CI_Low,AUROC_95CI_High,Accuracy (%),Brier Score,ECE,Sensitivity,Specificity
-LOCO Zero-Shot (UCI_Statlog_Heart),SchemaFlexTabNet-QC (Full Coverage),100.0,0.8821111111111111,0.8393583163417017,0.9178382169155378,78.14814814814814,0.1454224829498204,0.07678623977634641,0.85,0.7266666666666667
-LOCO Zero-Shot (UCI_Statlog_Heart),SchemaFlexTabNet-QC (Conformal alpha=0.10),65.55555555555556,0.9241335044929396,0.9241335044929396,0.9241335044929396,88.13559322033898,0.10125642282574528,0.0483582620903597,0.9146341463414634,0.8526315789473684
+Protocol,Target Cohort,Test N,Full AUROC,Full Accuracy (%),Conformal Accepted N,Acceptance Rate (%),Accepted Accuracy (%),Accepted AUROC,Source Set Coverage (%),Target Recalibrated Coverage (%)
+LOCO Zero-Shot (UCI Hungarian),UCI Hungarian,293,0.8641,76.79,229,78.16,85.15,0.8926,88.4,90.44
+LOCO Zero-Shot (UCI VA + Switzerland),UCI VA + Switzerland,308,0.7241,74.03,224,72.73,83.48,0.7705,86.36,90.26
+LOCO Zero-Shot (UCI Cleveland),UCI Cleveland (Deduplicated),303,0.8433,73.6,239,78.88,78.66,0.8755,83.17,90.1
+LOCO Zero-Shot (Z-Alizadeh Sani),Z-Alizadeh Sani (Tehran),303,0.7043,62.71,111,36.63,72.07,0.7895,84.16,90.1
+LOCO Zero-Shot (Framingham),Framingham Heart Study,4238,0.6778,51.32,2715,64.06,51.23,0.7062,68.76,90.02

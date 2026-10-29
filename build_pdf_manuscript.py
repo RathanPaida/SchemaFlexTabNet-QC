@@ -329,7 +329,7 @@ html_content = f"""<!DOCTYPE html>
 <p>Records violating these physical constraints (e.g., inverted SBP &lt; DBP) are filtered. In Sulianova, this identifies 1,374 physiologically corrupt rows.</p>
 
 <h3 class="subsec-title">B. Schema-Flexible Feature Tokenization</h3>
-<p>Let a patient <em>i</em> be characterized by an arbitrary observed feature subset <em>F<sub>i</sub> &sube; {{f<sub>1</sub>, f<sub>2</sub>, ..., f<sub>M</sub>}}</em> drawn from the global union of clinical attributes (<em>M=22</em>). Rather than arranging inputs into a static matrix with imputed zeros, each observed feature <em>j &in; F<sub>i</sub></em> is transformed into a continuous vector token <em>T<sub>i,j</sub> &in; R<sup>d</sup></em>:</p>
+<p>Let a patient <em>i</em> be characterized by an arbitrary observed feature subset <em>F<sub>i</sub> &sube; {{f<sub>1</sub>, f<sub>2</sub>, ..., f<sub>M</sub>}}</em> drawn from the canonical clinical feature registry (<em>M=14</em>). Rather than arranging inputs into a static matrix with imputed zeros, each observed feature <em>j &in; F<sub>i</sub></em> is transformed into a continuous vector token <em>T<sub>i,j</sub> &in; R<sup>d</sup></em>:</p>
 <div class="math-block">T<sub>i,j</sub> = <strong>e</strong><sub>name</sub>(f<sub>j</sub>) + &phi;<sub>val</sub>(x<sub>i,j</sub>),</div>
 <p>where <strong>e</strong><sub>name</sub>(f<sub>j</sub>) &in; R<sup>d</sup> is a learned feature-identity embedding, and &phi;<sub>val</sub>(x<sub>i,j</sub>) is a feature-specific linear projection:</p>
 <div class="math-block">&phi;<sub>val</sub>(x<sub>i,j</sub>) = x<sub>i,j</sub> &middot; <strong>w</strong><sub>j</sub> + <strong>b</strong><sub>j</sub>, &nbsp; <strong>w</strong><sub>j</sub>, <strong>b</strong><sub>j</sub> &in; R<sup>d</sup>.</div>
@@ -342,7 +342,7 @@ html_content = f"""<!DOCTYPE html>
 
 <h3 class="subsec-title">C. Positive-Constrained Monotonic Skip Path</h3>
 <p>Cardiovascular clinicians require that established harmful biomarkers (e.g., advancing age, malignant systolic blood pressure, high cholesterol, severe ST depression) must not lower predicted disease risk when elevated counterfactually [15]. Because unconstrained multi-head attention can produce non-monotonic artifacts, we introduce a dual inductive bias:</p>
-<p class="no-indent">1) <em>Positive-Constrained Skip Path:</em> We define a monotonic linear skip branch for harmful biomarkers <em>M = {{age, ap_hi, trestbps, chol, oldpeak}}</em>:</p>
+<p class="no-indent">1) <em>Positive-Constrained Skip Path:</em> We define a monotonic linear skip branch for harmful clinical biomarkers <em>M = {{age_years, systolic_bp, chol_mgdl, st_depression_oldpeak}}</em>:</p>
 <div class="math-block">f<sub>mono</sub>(<strong>x</strong><sub>i</sub>) = &sum;<sub>k &in; M</sub> softplus(w<sub>k</sub>) &middot; x<sub>i,k</sub> &middot; I(x<sub>i,k</sub> observed),</div>
 <p>where softplus(w) = ln(1 + e<sup>w</sup>) &gt; 0 strictly enforces non-negative coefficients.</p>
 <p class="no-indent">2) <em>Autograd Monotonicity Regularization:</em> We compute the exact input gradient via automatic differentiation and penalize negative directional gradients:</p>
@@ -379,19 +379,22 @@ html_content = f"""<!DOCTYPE html>
 <div class="math-block"><strong>W</strong><sub>t+1</sub>[j] = &sum;<sub>k &in; S<sub>j</sub></sub> n<sub>k</sub> <strong>W</strong><sub>t,k</sub>[j] / &sum;<sub>k &in; S<sub>j</sub></sub> n<sub>k</sub>,</div>
 <p>where S<sub>j</sub> = {{k | feature j &in; F<sup>(k)</sup>}}. Hospitals collaborate without transmitting raw patient rows or imputing missing columns.</p>
 
-<h2 class="sec-title">V. Experimental Setup</h2>
+<h2 class="sec-title">V. Experimental Setup and Evaluation Protocol</h2>
 
-<h3 class="subsec-title">A. Multi-Cohort Harmonization</h3>
-<p>We assemble and harmonize six independent cardiovascular cohorts spanning 74,013 clean, non-overlapping patients:</p>
-<p class="no-indent">1) <em>Sulianova Population Screening Cohort (N = 68,568 clean):</em> Primary screening cohort in Russia recording demographics, blood pressure, cholesterol, glucose, and lifestyle vitals. Disease endpoint: prevalent cardiovascular disease survey.</p>
-<p class="no-indent">2) <em>UCI Cleveland Clinic (N = 303 clean):</em> Tertiary cardiac catheterization cohort. Disease endpoint: angiographic coronary artery disease (&ge; 50% diameter stenosis) [7].</p>
-<p class="no-indent">3) <em>UCI Hungarian Institute of Cardiology (N = 293):</em> Angiographic cohort in Budapest [18].</p>
-<p class="no-indent">4) <em>UCI Long Beach VA &amp; Switzerland (N = 308 pooled):</em> High-risk veterans and Swiss cardiology patients [19].</p>
-<p class="no-indent">5) <em>Z-Alizadeh Sani Cohort (N = 303):</em> Tertiary catheterization registry from Tehran Heart Center [16].</p>
-<p class="no-indent">6) <em>Framingham Heart Study (N = 4,238):</em> Longitudinal epidemiological cohort [17]. Disease endpoint: 10-year incident coronary heart disease event.</p>
+<h3 class="subsec-title">A. Multi-Cohort Harmonization and Feature Registry</h3>
+<p>We assemble and harmonize six independent cardiovascular cohorts spanning 74,013 clean, non-overlapping patients (Statlog duplicates excluded). The canonical feature registry defines <strong>M=14 clinical features</strong>: 8 continuous variables (age, systolic and diastolic BP, BMI, pulse pressure, total serum cholesterol, max heart rate, ST depression) and 6 categorical/ordinal variables (biological sex, ATP-III cholesterol tier, glucose tier, chest-pain type, exercise angina, smoking status). An auxiliary concept target (Stage 2 Hypertension: SBP &ge; 140 or DBP &ge; 90 mmHg) provides multi-task supervision during training (&lambda;<sub>concept</sub>=0.10). The baseline inner-join merge restricts inputs to 5 shared features universally recorded across all cohorts (age, sex, systolic BP, cholesterol tier, smoking), whereas the union schema provides access to all 14 canonical features.</p>
 
-<h3 class="subsec-title">B. Training Hyperparameters</h3>
-<p>Models are trained with PyTorch on NVIDIA GPUs using AdamW optimizer (lr = 1.5 &times; 10<sup>-3</sup>, weight decay = 1 &times; 10<sup>-4</sup>), batch size 256, for 16 epochs with cosine annealing schedule. Random seeds are fixed (Seed 42). Gradient clipping is applied at max norm 1.0.</p>
+<h3 class="subsec-title">B. Experimental Partitions and Splitting Protocols</h3>
+<p class="no-indent">1) <em>Pooled 5-Fold Benchmark (N=74,013):</em> Stratified 5-fold cross-validation on all non-overlapping records (80% train, 20% test per fold).</p>
+<p class="no-indent">2) <em>Literature 70/15/15 Reproduction:</em> Stratified 70% train, 15% validation (early stopping selection), 15% test on leaked (71,025 raw), deduplicated (70,302 raw), and Sulianova pools (68,568 full QC / 68,667 minimal filter).</p>
+<p class="no-indent">3) <em>Leave-One-Cohort-Out (LOCO) Transfer:</em> In each of 5 folds, one cohort is held out as the target test cohort (Hungarian=293, VA+Sw=308, Cleveland=303, Z-Alizadeh=303, Framingham=4,238). The remaining K&minus;1 cohorts form the source pool (N&approx;69,775–73,720), split into 85% source train and 15% source validation/calibration. Checkpoints are selected by validation AUROC, temperature scaling is fitted via L-BFGS, and source conformal quantiles (q&#770;<sub>source</sub>) are calibrated on source validation data, evaluated zero-shot on 100% of target records. Target recalibration uses a 20% local target slice, evaluated on the remaining 80% target records.</p>
+<p class="no-indent">4) <em>Missingness Stress Test and Ablation:</em> Stratified 70% train, 15% validation, and 15% held-out test multi-cohort partition (N=11,102).</p>
+
+<h3 class="subsec-title">C. Conformal Calibration and Repeated-Seed Protocol</h3>
+<p>Non-conformity scores are <em>s(x, y) = 1 &minus; P&#770;(Y=y | X=x)</em> under temperature scaling. At nominal coverage 1&minus;&alpha; = 0.90 (&alpha;=0.10), calibration quantiles q&#770; are computed at the &lceil;(n+1)(1&minus;&alpha;)&rceil;/n level. Decisions are accepted when |C(x)|=1 (decisive singleton with prediction y&#770; = argmax P&#770;) and referred when |C(x)| &in; {0, 2}. Mondrian conformal calibration computes group-conditional quantiles across sex. Missingness stress tests are averaged over <strong>5 independent random seeds</strong> ([42, 100, 2026, 777, 999]) across identical masks for all models (reporting mean &plusmn; std). LOCO matrix and ablation runs use fixed seed 42 for deterministic replication, tested via paired DeLong tests with Holm-Bonferroni correction.</p>
+
+<h3 class="subsec-title">D. Training Hyperparameters</h3>
+<p>Models are trained using PyTorch on NVIDIA GPUs with AdamW optimizer (initial lr = 1.5 &times; 10<sup>-3</sup>, cosine annealing decay to 10<sup>-5</sup> over 16 epochs, weight decay = 1 &times; 10<sup>-4</sup>), batch size 256, and gradient clipping at max norm 1.0. Loss weights are fixed at &lambda;<sub>concept</sub> = 0.10 and &lambda;<sub>mono</sub> = 1.20.</p>
 
 <h2 class="sec-title">VI. Results and Empirical Analysis</h2>
 
