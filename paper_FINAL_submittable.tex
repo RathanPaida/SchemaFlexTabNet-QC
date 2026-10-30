@@ -208,14 +208,14 @@ Fig.~\ref{fig:arch} summarizes the architecture.
 \begin{tikzpicture}[
   box/.style={draw,rounded corners=2pt,align=center,font=\scriptsize,minimum height=8mm,minimum width=22mm,inner sep=3pt},
   arr/.style={-{Latex[length=1.8mm]},thick}]
-\node[box,fill=blue!8] (in) at (0,0) {Observed features\\per patient $\mathcal{F}_i$};
+\node[box,fill=blue!8] (in) at (0,0) {Observed features\\ per patient $\mathcal{F}_i$};
 \node[box,fill=orange!15] (tok) at (3.6,0) {Feature tokenizer\\$e_{\mathrm{name}}(f_j)+w_jx_{ij}+b_j$};
 \node[box,fill=orange!15] (drop) at (7.2,0) {Feature dropout\\$p_{\mathrm{mask}}=0.20$};
-\node[box,fill=green!12] (enc) at (7.2,-1.7) {[CLS] + masked\\self-attention encoder};
+\node[box,fill=green!12] (enc) at (7.2,-1.7) {[CLS] + masked\\ self-attention encoder};
 \node[box,fill=red!10] (risk) at (3.6,-1.7) {CVD risk head $\hat y$};
 \node[box,fill=red!10] (con) at (0,-1.7) {Concept head\\(Stage 2 HTN)};
 \node[box,fill=purple!12] (cal) at (7.2,-3.4) {Temperature scaling\\+ conformal sets};
-\node[box,fill=gray!15] (out) at (3.6,-3.4) {Accept or\\refer to clinician};
+\node[box,fill=gray!15] (out) at (3.6,-3.4) {Accept or\\ refer to clinician};
 \draw[arr] (in)--(tok); \draw[arr] (tok)--(drop); \draw[arr] (drop)--(enc);
 \draw[arr] (enc)--(risk); \draw[arr] (risk)--(con); \draw[arr] (enc)--(cal);
 \draw[arr] (cal)--(out);
@@ -564,7 +564,7 @@ Table~\ref{tab:pooled} (Pooled 5-Fold) & \texttt{src/baseline\_models.py} & Defa
 Table~\ref{tab:loco} (5-Seed LOCO AUROC) & \texttt{evaluate\_multiseed\_loco\_and\_conformal.py} & \texttt{configs/schema\_registry.yaml} & LOCO 5 folds $\times$ 5 seeds (70/15/15) & \texttt{results/table4\_multiseed\_loco\_summary.csv}\\
 Table~\ref{tab:delong} (Paired DeLong) & \texttt{src/statistical\_tests.py} & Holm--Bonferroni & LOCO fold predictions vs.\ Union & \texttt{results/table3\_proposed\_loco\_conformal.csv}\\
 Table~\ref{tab:abl} (Ablation \& Mono.) & \texttt{src/ablation\_study.py} & \texttt{configs/schema\_registry.yaml} & 70/15/15 multi-cohort ($N=11{,}102$) & \texttt{results/table5\_ablation\_monotonicity.csv}\\
-Table~\ref{tab:conf} (Conformal Audit) & \texttt{evaluate\_multiseed\_loco\_and\_conformal.py} & $\alpha=0.10$, 3-way split & LOCO 5 folds $\times$ 5 seeds & \texttt{results/loco\_multi\_seed\_stability_audit.csv}\\
+Table~\ref{tab:conf} (Conformal Audit) & \texttt{evaluate\_multiseed\_loco\_and\_conformal.py} & $\alpha=0.10$, 3-way split & LOCO 5 folds $\times$ 5 seeds & \texttt{results/loco\_multi\_seed\_stability\_audit.csv}\\
 Table~\ref{tab:miss} (5-Seed Missingness) & \texttt{src/missingness\_experiment.py} & 5 masking seeds & 0--50\% test-time feature dropout & \texttt{results/table6\_missingness\_native\_nan.csv}\\
 \bottomrule
 \end{tabular}
