@@ -68,7 +68,38 @@ The multi-cohort canonical schema registry defines $M=14$ clinical features:
 \item \textbf{6 categorical/ordinal variables}: biological sex (\texttt{sex\_male}), Adult Treatment Panel III cholesterol risk tier (\texttt{chol\_tier}), fasting glucose / diabetes classification tier (\texttt{gluc\_tier}), chest pain symptom presentation (\texttt{chest\_pain\_type}), exercise-induced angina (\texttt{exercise\_angina}), and smoking history (\texttt{smoker}).
 \end{itemize}
 In addition, the registry defines \textbf{one derived auxiliary clinical concept label} ($C=1$): Stage~2 hypertension (\texttt{concept\_hypertension}: $\mathrm{SBP}\ge 140$ or $\mathrm{DBP}\ge 90$~mmHg), which provides auxiliary multi-task supervision for interpretive bottleneck regularization during training ($\lambda_{\mathrm{concept}}=0.10$) and is not supplied as an input feature.
-The baseline inner-join merge restricts input features to the $M_{\mathrm{shared}}=5$ clinical attributes universally recorded across all cohorts (\texttt{age\_years}, \texttt{sex\_male}, \texttt{systolic\_bp}, \texttt{chol\_tier}, \texttt{smoker}), whereas the union schema provides access to all $M=14$ canonical features. Variables that a cohort does not record are preserved as structurally \emph{absent} tokens masked in self-attention, rather than statically imputed.
+The baseline inner-join merge restricts input features to the $M_{\mathrm{shared}}=5$ clinical attributes universally recorded across all cohorts (\texttt{age\_years}, \texttt{sex\_male}, \texttt{systolic\_bp}, \texttt{chol\_tier}, \texttt{smoker}), whereas the union schema provides access to all $M=14$ canonical features. Variables that a cohort does not record are preserved as structurally \emph{absent} tokens masked in self-attention, rather than statically imputed. Table~\ref{tab:schema} provides the exact registry definitions, measurement units, clinical plausibility ranges, derivation formulas, and source column mappings across all six cohorts, matching \texttt{configs/schema\_registry.yaml} and \texttt{src/data\_harmonizer.py}.
+
+\begin{table*}[t]
+\caption{Canonical feature registry ($M=14$ clinical features and $C=1$ auxiliary concept target). $M_{\mathrm{shared}}=5$ marks variables universally recorded across all cohorts (inner join). All definitions match \texttt{configs/schema\_registry.yaml} and \texttt{src/data\_harmonizer.py}.}
+\label{tab:schema}
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lllllp{4.6cm}}
+\toprule
+Canonical Name & Type & Unit / Domain & Plausible Bounds & Derivation / Formula & Source Variables Across Cohorts\\
+\midrule
+\texttt{age\_years} & Continuous & Years & $[18, 110]$ & Direct / Age in days $/ 365.25$ & UCI \texttt{age}; Sulianova \texttt{age}; Framingham \texttt{age}; Z-Alizadeh \texttt{Age}\\
+\texttt{systolic\_bp} & Continuous & mmHg & $[60, 260]$ & Direct resting SBP & UCI \texttt{trestbps}; Sulianova \texttt{ap\_hi}; Framingham \texttt{sysBP}; Z-Alizadeh \texttt{BP}\\
+\texttt{diastolic\_bp} & Continuous & mmHg & $[40, 160]$ & Direct resting DBP & Sulianova \texttt{ap\_lo}; Framingham \texttt{diaBP}; (unrecorded in UCI/Z-Alizadeh)\\
+\texttt{bmi} & Continuous & $\mathrm{kg/m^2}$ & $[12, 70]$ & $\mathrm{Weight} / (\mathrm{Height}/100)^2$ & Sulianova \texttt{weight}/\texttt{height}; Framingham \texttt{BMI}; Z-Alizadeh \texttt{BMI}\\
+\texttt{pulse\_pressure} & Continuous & mmHg & $[15, 160]$ & $\mathrm{SBP} - \mathrm{DBP}$ & Derived from \texttt{systolic\_bp} and \texttt{diastolic\_bp}\\
+\texttt{chol\_mgdl} & Continuous & mg/dL & $[80, 650]$ & Total serum cholesterol & UCI \texttt{chol}; Framingham \texttt{totChol}; (unrecorded in Sulianova/Z-Alizadeh)\\
+\texttt{max\_hr\_thalach} & Continuous & bpm & $[50, 230]$ & Peak exercise heart rate & UCI \texttt{thalach}; (unrecorded in Sulianova/Framingham/Z-Alizadeh)\\
+\texttt{st\_depression\_oldpeak} & Continuous & mm & $[0.0, 10.0]$ & Exercise-induced ST depression & UCI \texttt{oldpeak}; (unrecorded in Sulianova/Framingham/Z-Alizadeh)\\
+\midrule
+\texttt{sex\_male} & Categorical & $\{0, 1\}$ & Binary & Direct biological sex & UCI \texttt{sex}; Sulianova \texttt{gender==2}; Framingham \texttt{male}; Z-Alizadeh \texttt{Sex}\\
+\texttt{chol\_tier} & Ordinal & $\{1, 2, 3\}$ & ATP-III tiers & $<200$ (1), $200$--$239$ (2), $\ge 240$ (3) & Sulianova \texttt{cholesterol}; mapped from \texttt{chol\_mgdl} in other cohorts\\
+\texttt{gluc\_tier} & Ordinal & $\{1, 2, 3\}$ & ADA tiers & $<100$ (1), $100$--$125$ (2), $\ge 126$ (3) & Sulianova \texttt{gluc}; Framingham \texttt{glucose}; UCI \texttt{fbs}\\
+\texttt{chest\_pain\_type} & Categorical & $\{1, 2, 3, 4\}$ & 4 symptom types & Typ.\ (1), Atyp.\ (2), Non-ang.\ (3), Asymp.\ (4) & UCI \texttt{cp}; (unrecorded in Sulianova/Framingham/Z-Alizadeh)\\
+\texttt{exercise\_angina} & Categorical & $\{0, 1\}$ & Binary & $0$: No, $1$: Yes & UCI \texttt{exang}; (unrecorded in Sulianova/Framingham/Z-Alizadeh)\\
+\texttt{smoker} & Categorical & $\{0, 1\}$ & Binary & $0$: Non-smoker, $1$: Smoker & Sulianova \texttt{smoke}; Framingham \texttt{currentSmoker}; Z-Alizadeh \texttt{Current Smoker}\\
+\midrule
+\multicolumn{6}{l}{\emph{Auxiliary Clinical Concept Target ($C=1$; not supplied as input feature):}}\\
+\texttt{concept\_hypertension} & Binary Label & $\{0, 1\}$ & Stage 2 HTN & $\mathrm{SBP}\ge 140$ or $\mathrm{DBP}\ge 90$~mmHg & Multi-task supervision head ($\lambda_{\mathrm{concept}}=0.10$)\\
+\bottomrule
+\end{tabular}
+\end{table*}
 
 \subsection{Plausibility gatekeeper}
 Instead of a statistical $|Z|>3$ filter, records are rejected if they violate physiological bounds (age 18--110~y; SBP 60--260; DBP 40--160~mmHg; BMI 12--70; cholesterol 80--650~mg/dL; heart rate 50--230~bpm; ST depression 0--10~mm) or hemodynamic consistency (SBP $-$ DBP $\ge$ 10~mmHg). Exact patient-level duplicates are removed. Table~\ref{tab:audit} gives the audit log. The eight clean cohorts sum to 74{,}283 records; excluding the 270 Statlog rows whose clinical measurement signatures match Cleveland records leaves 74{,}013 non-overlapping patients, which is the pool used throughout the paper. Sulianova contributes 92.6\% of these (68{,}568 of 74{,}013), a fact that shapes several conclusions below.
@@ -218,15 +249,23 @@ The total loss is
 \end{equation}
 with $\lambda_1=0.10$ and $\lambda_2=1.20$. Because the attention path is unconstrained, neither mechanism guarantees monotonicity; we therefore \emph{measure} violations (Section~\ref{sec:ablation}).
 
-\subsection{Calibration and abstention}
-Temperature scaling is fitted by L-BFGS on held-out validation data. Split conformal prediction at $\alpha=0.10$ then yields a label set $\mathcal{C}(x)\subseteq\{0,1\}$. If $|\mathcal{C}(x)|=1$ the prediction is accepted; otherwise the case is flagged for clinician review. A Mondrian variant computes non-conformity quantiles separately per sex.
-
-\subsection{Conformal procedure}
-Let $p(x)$ be the temperature-scaled probability of disease and define the non-conformity score $s(x,y)=1-p_y(x)$. On a calibration set of $n$ labeled patients, let $\hat q$ be the $\lceil (n+1)(1-\alpha)\rceil/n$ empirical quantile of the scores $s(x_i,y_i)$. The prediction set is
+\subsection{Calibration and conformal procedure}\label{sec:conformal_theory}
+To guarantee valid distribution-free coverage under exchangeability, the model-fitting validation split and the conformal calibration split must be strictly separated. Reusing labeled calibration data to fit post-hoc probability calibration (e.g., temperature scaling) or early stopping introduces optimization bias and invalidates standard split-conformal exchangeability. We therefore enforce a strict \emph{three-way source partitioning protocol}:
+\begin{enumerate}
+\item \emph{Training split} ($D_{\mathrm{train}}$, 70\% of source pool): used exclusively for optimizing network parameters $\theta$.
+\item \emph{Validation split} ($D_{\mathrm{val}}$, 15\% of source pool): used for early stopping checkpoint selection and fitting the scalar temperature $T^*$ via L-BFGS to minimize negative log-likelihood on uncalibrated logits $z(x)$.
+\item \emph{Calibration split} ($D_{\mathrm{cal}}$, 15\% of source pool): a strictly disjoint, untouched partition with $n$ patients. With $(\theta, T^*)$ frozen, calibrated probabilities $p_y(x) = \sigma(z(x)/T^*)$ yield non-conformity scores $s(x,y) = 1 - p_y(x) \in [0, 1]$.
+\end{enumerate}
+Because $D_{\mathrm{cal}}$ is disjoint from both $D_{\mathrm{train}}$ and $D_{\mathrm{val}}$, the score function $s(x,y)$ is deterministic with respect to $D_{\mathrm{cal}}$. Conditional on the fitted model, scores on $D_{\mathrm{cal}}$ and on any i.i.d.\ test point $(X_{n+1}, Y_{n+1}) \sim P_{\mathrm{source}}$ are strictly exchangeable.
+At nominal error rate $\alpha=0.10$ ($1-\alpha=90\%$ target coverage), the finite-sample adjusted conformal quantile threshold is computed on $n$ calibration samples as:
 \begin{equation}
-\mathcal{C}(x)=\{y\in\{0,1\}:\ s(x,y)\le \hat q\}.
+\hat{q} = \mathrm{Quantile}\left(\{s(x_i, y_i)\}_{i=1}^n; \; \frac{\lceil (n+1)(1-\alpha) \rceil}{n}\right).
 \end{equation}
-Under exchangeability of calibration and test data, $\Pr[Y\in\mathcal{C}(X)]\ge 1-\alpha$. The Mondrian variant computes $\hat q_g$ separately for each sex $g$, targeting $\Pr[Y\in\mathcal{C}(X)\mid G=g]\ge 1-\alpha$. A case is \emph{accepted} when $|\mathcal{C}(x)|=1$, and \emph{referred} when $\mathcal{C}(x)=\{0,1\}$ or $\emptyset$.
+The prediction set for a test patient $x$ is:
+\begin{equation}
+\mathcal{C}(x) = \{y \in \{0, 1\} : s(x, y) \le \hat{q}\} = \{y \in \{0, 1\} : p_y(x) \ge 1 - \hat{q}\}.
+\end{equation}
+Under source exchangeability, $\Pr[Y \in \mathcal{C}(X)] \ge 1 - \alpha$. A case is \emph{accepted} when $|\mathcal{C}(x)|=1$ (decisive singleton with point prediction $\hat{y} = \arg\max_y p_y(x)$), and \emph{referred/abstained} when $|\mathcal{C}(x)| \in \{0, 2\}$. Mondrian conformal calibration computes $\hat{q}_g$ independently for biological sex $g \in \{\mathrm{Male}, \mathrm{Female}\}$.
 
 \textbf{Mathematical upper bound on conformal coverage.} For binary classification on $N$ evaluation patients, prediction sets satisfy $|\mathcal{C}(x_i)|\in\{0,1,2\}$. Let $N_0 = |\{i : |\mathcal{C}(x_i)|=0\}|$ denote empty sets, $N_1 = |\{i : |\mathcal{C}(x_i)|=1\}|$ singleton sets (accepted predictions; $r_{\mathrm{acc}}=N_1/N$), and $N_2 = |\{i : |\mathcal{C}(x_i)|=2\}|$ uncertain pair sets ($\mathcal{C}(x_i)=\{0,1\}$), with $N=N_0+N_1+N_2$. Accepted patients achieve accuracy $\mathrm{Acc}_{\mathrm{acc}} = N_{1,\mathrm{corr}}/N_1$. Crucially, for every incorrectly predicted accepted patient, $\mathcal{C}(x_i)=\{1-y_i\}$, so the true label $y_i$ is strictly absent. Empty sets likewise contain no labels. Therefore, true label coverage $y_i\in\mathcal{C}(x_i)$ is satisfied only by correct singletons and pair sets: $N_{\mathrm{cov}} = N_{1,\mathrm{corr}} + N_2 = (N_1 - N_{1,\mathrm{err}}) + (N - N_0 - N_1) = N - N_0 - N_{1,\mathrm{err}}$. Dividing by $N$ yields the exact coverage identity:
 \begin{equation}
@@ -263,7 +302,7 @@ compared with the treat-all strategy $\mathrm{NB}_{\mathrm{all}}=\pi-(1-\pi)\,p_
 \begin{enumerate}
 \item \emph{Pooled multi-model benchmark ($N=74{,}013$):} Stratified five-fold cross-validation across all non-overlapping records (excluding Statlog). Within each fold, 80\% ($N=59{,}210$) serves as training data and 20\% ($N=14{,}803$) as the test set. Models are evaluated with raw features alone and with four engineered meta-features (\texttt{bmi}, \texttt{pulse\_pressure}, \texttt{chol\_tier}, \texttt{gluc\_tier}).
 \item \emph{Literature 70/15/15 reproduction:} Stratified partition into 70\% training, 15\% validation (for early stopping checkpoint selection), and 15\% held-out test evaluation on the leaked pool (71{,}025 raw $\rightarrow$ 69{,}692 clean), deduplicated pool (70{,}302 raw $\rightarrow$ 68{,}969 clean), and Sulianova alone (68{,}568 full QC / 68{,}667 minimal filter).
-\item \emph{Leave-one-cohort-out (LOCO) cross-hospital transfer:} In each of five folds, one entire clinical cohort is held out as the unseen target test cohort ($N_{\mathrm{test}}$: Hungarian=293, VA+Switzerland=308, Cleveland=303, Z-Alizadeh Sani=303, Framingham=4{,}238). The remaining $K-1$ cohorts form the source pool ($N_{\mathrm{source}}\approx 69{,}775$--$73{,}720$), partitioned into an 85\% source training split ($D_{\mathrm{train}}$) and a 15\% source validation/calibration split ($D_{\mathrm{val/cal}}$). Network weights are optimized strictly on $D_{\mathrm{train}}$, early stopping monitors AUROC on $D_{\mathrm{val/cal}}$, and post-hoc temperature scaling parameter $T$ is fitted via L-BFGS on $D_{\mathrm{val/cal}}$ logits. Zero-shot evaluation is executed on 100\% of target records. For target recalibration, a 20\% stratified local slice ($D_{\mathrm{tgt,cal}}$) re-estimates non-conformity quantiles, evaluated on the remaining 80\% target records.
+\item \emph{Leave-one-cohort-out (LOCO) cross-hospital transfer:} In each of five folds, one entire clinical cohort is held out as the unseen target test cohort ($N_{\mathrm{test}}$: Hungarian=293, VA+Switzerland=308, Cleveland=303, Z-Alizadeh Sani=303, Framingham=4{,}238). The remaining $K-1$ cohorts form the source pool ($N_{\mathrm{source}}\approx 69{,}775$--$73{,}720$), strictly partitioned into a 70\% source training split ($D_{\mathrm{train}}$ for optimizing network parameters $\theta$), a 15\% source validation split ($D_{\mathrm{val}}$ for early stopping and temperature scaling $T^*$), and a disjoint 15\% calibration split ($D_{\mathrm{cal}}$ for finite-sample non-conformity threshold calibration $\hat{q}$). Zero-shot evaluation is executed on 100\% of target records. For target recalibration, a 20\% stratified local slice ($D_{\mathrm{tgt,cal}}$) re-estimates non-conformity quantiles, evaluated on the remaining 80\% target records.
 \item \emph{Missingness stress test and architectural ablation:} Stratified 70\% training, 15\% validation, and 15\% held-out test multi-cohort partition ($N=11{,}102$ test patients, Statlog excluded).
 \end{enumerate}
 
@@ -272,11 +311,11 @@ compared with the treat-all strategy $\mathrm{NB}_{\mathrm{all}}=\pi-(1-\pi)\,p_
 \textbf{Repeated seeds and variance reporting.}
 \begin{itemize}
 \item \emph{Missingness stress test (Table~\ref{tab:miss}):} To eliminate stochastic artifact from random masking, evaluations are repeated across \textbf{five independent random seeds} ($[42, 100, 2026, 777, 999]$). The same masked subsets are applied identically across all five model families (SchemaFlex, Unregularized Transformer, Native-NaN LightGBM, Native-NaN XGBoost, Median-Imputed LightGBM), reporting empirical mean $\pm$ sample standard deviation.
-\item \emph{LOCO cross-cohort matrix (Table~\ref{tab:loco}) and ablation (Table~\ref{tab:abl}):} Trained with fixed seed $42$ for deterministic reproducibility; cohort-level significance is tested using paired DeLong tests with family-wise Holm--Bonferroni correction.
+\item \emph{LOCO cross-cohort matrix (Table~\ref{tab:loco}) and conformal abstention audit (Table~\ref{tab:conf}):} Evaluated across \textbf{five independent random seeds} ($[42, 100, 2026, 777, 999]$) reporting empirical mean $\pm$ sample standard deviation across all cohorts, alongside deterministic single-seed ($42$) patient-level count audits and paired DeLong tests with family-wise Holm--Bonferroni correction.
 \item \emph{Subgroup analysis:} Evaluated with 1{,}000 bootstrap resamples for 95\% confidence intervals.
 \end{itemize}
 
-\textbf{Model architecture and training optimization.} \sfn{} employs 2 transformer layers, 4 attention heads, token embedding dimension $d=64$, feedforward dimension 128, and dropout $0.10$. Training applies AdamW ($\beta_1=0.9, \beta_2=0.999$, weight decay $10^{-4}$), initial learning rate $1.5\times 10^{-3}$, cosine annealing decay down to $10^{-5}$ over 16 epochs, batch size 256, and gradient norm clipping at $1.0$. Loss regularization weights are fixed at $\lambda_{\mathrm{concept}}=0.10$ and $\lambda_{\mathrm{mono}}=1.20$. Baseline tree models (LightGBM, XGBoost, CatBoost) are tuned with early stopping on validation AUROC. Single-seed LOCO results provide deterministic point estimates, and prospective multi-site validation remains recommended.
+\textbf{Model architecture and training optimization.} \sfn{} employs 2 transformer layers, 4 attention heads, token embedding dimension $d=64$, feedforward dimension 128, and dropout $0.10$. Training applies AdamW ($\beta_1=0.9, \beta_2=0.999$, weight decay $10^{-4}$), initial learning rate $1.5\times 10^{-3}$, cosine annealing decay down to $10^{-5}$ over 16 epochs, batch size 256, and gradient norm clipping at $1.0$. Loss regularization weights are fixed at $\lambda_{\mathrm{concept}}=0.10$ and $\lambda_{\mathrm{mono}}=1.20$. Baseline tree models (LightGBM, XGBoost, CatBoost) are tuned with early stopping on validation AUROC. Prospective multi-site clinical validation remains recommended.
 
 %=====================================================================
 \section{Results}\label{sec:results}
@@ -303,25 +342,25 @@ TabNet & 0.8078 & 0.8105 & $+0.0027$ & 74.87\\
 \end{table}
 
 \subsection{Zero-shot cross-cohort transfer}
-Table~\ref{tab:loco} and Fig.~\ref{fig:loco} show LOCO transfer. Inner-join models are weak (mean AUROC 0.611 for LightGBM and 0.645 for the re-implemented \htn{}) because the shared columns exclude chest-pain type, exercise ECG variables and vessel counts. Retaining the union schema is the decisive change: NaN-aware LightGBM already reaches 0.740. \sfn{} reaches 0.763, a mean gain of $+0.023$ over that stronger baseline, driven by Z-Alizadeh ($+0.102$) and Hungarian ($+0.022$); it is lower on VA+Switzerland ($-0.004$) and Cleveland ($-0.013$).
+Table~\ref{tab:loco} and Fig.~\ref{fig:loco} show LOCO transfer evaluated across five repeated seeds ($[42, 100, 2026, 777, 999]$). Inner-join models are weak (mean AUROC $0.6154 \pm 0.0054$ for LightGBM and 0.6445 for the re-implemented \htn{}) because the shared columns exclude chest-pain type, exercise ECG variables and vessel counts. Retaining the union schema is the decisive change: NaN-aware LightGBM reaches $0.7405 \pm 0.0094$. \sfn{} reaches $0.7635 \pm 0.0077$ (seed-42: 0.7662), a mean gain of $+0.0230$ over that stronger baseline, driven by Z-Alizadeh ($+0.0788$) and Hungarian ($+0.0199$); it is slightly lower on VA+Switzerland ($-0.0032$) and comparable on Cleveland ($+0.0092$) and Framingham ($+0.0103$).
 
 Table~\ref{tab:delong} gives paired DeLong tests. Against the re-implemented inner-join \htn{}, \sfn{} is significantly better on Hungarian ($p<10^{-10}$), VA+Switzerland ($p{=}5.6\times10^{-4}$) and Cleveland ($p{=}2.1\times10^{-6}$), and not significantly different on Z-Alizadeh ($p{=}0.84$) or Framingham ($p{=}0.71$). Against the union-schema LightGBM, the most informative comparison, the Z-Alizadeh gain is nominally significant (raw $p{=}0.037$) but no cohort survives Holm correction (adjusted $p\ge 0.18$). We did not detect a statistically significant AUROC difference between \sfn{} and union-schema LightGBM on any individual cohort after Holm correction. These results indicate that superiority was not established under the specified tests, but they do not prove statistical equivalence. Given the modest sample sizes ($N\approx 300$) of the tertiary cardiology cohorts, statistical power is limited to detect small margins ($\Delta\approx 0.01$--$0.02$); establishing practical equivalence requires prespecified equivalence margins and formal two one-sided testing (TOST) on larger cohorts.
 
 \begin{table*}[t]
-\caption{Zero-shot LOCO AUROC. Hybrid = re-implemented \htn{} with inner join; Union LGBM = NaN-aware LightGBM on the union schema. The mean row is the unweighted mean of the five per-cohort values. Bold marks the best value per row.}
+\caption{Zero-shot LOCO AUROC across 5 repeated seeds (mean $\pm$ std; seed-42 point estimates in parentheses). Hybrid = re-implemented \htn{} with inner join; Union LGBM = NaN-aware LightGBM on the union schema. The mean row is the unweighted mean of the five per-cohort values. Bold marks the highest mean AUROC per row.}
 \label{tab:loco}
 \centering\footnotesize
 \begin{tabular}{lccccc}
 \toprule
 Held-out cohort ($N$) & Inner-join LGBM & Hybrid (re-impl.) & Union LGBM & \sfn{} & $\Delta$ vs.\ union\\
 \midrule
-Hungarian (293) & 0.5917 & 0.6111 & 0.8423 & \textbf{0.8641} & $+0.0218$\\
-VA+Switzerland (308) & 0.5353 & 0.5451 & \textbf{0.7280} & 0.7241 & $-0.0039$\\
-Cleveland dedup.\ (303) & 0.5705 & 0.6785 & \textbf{0.8566} & 0.8433 & $-0.0133$\\
-Z-Alizadeh Sani (303) & 0.6881 & \textbf{0.7126} & 0.6028 & 0.7043 & $+0.1015$\\
-Framingham (4{,}238) & 0.6701 & 0.6750 & 0.6695 & \textbf{0.6778} & $+0.0083$\\
+Hungarian (293) & 0.5979 $\pm$ 0.0060 (.605) & 0.6111 & 0.8433 $\pm$ 0.0128 (.856) & \textbf{0.8631 $\pm$ 0.0146} (.872) & $+0.0199$\\
+VA+Switzerland (308) & 0.5419 $\pm$ 0.0041 (.538) & 0.5451 & \textbf{0.7262 $\pm$ 0.0091} (.729) & 0.7230 $\pm$ 0.0046 (.722) & $-0.0032$\\
+Cleveland dedup.\ (303) & 0.5791 $\pm$ 0.0025 (.578) & 0.6785 & 0.8480 $\pm$ 0.0035 (.843) & \textbf{0.8572 $\pm$ 0.0085} (.855) & $+0.0092$\\
+Z-Alizadeh Sani (303) & 0.6836 $\pm$ 0.0094 (.693) & \textbf{0.7126} & 0.6153 $\pm$ 0.0177 (.625) & 0.6942 $\pm$ 0.0085 (.701) & $+0.0788$\\
+Framingham (4{,}238) & 0.6745 $\pm$ 0.0052 (.676) & 0.6750 & 0.6699 $\pm$ 0.0041 (.675) & \textbf{0.6802 $\pm$ 0.0024} (.681) & $+0.0103$\\
 \midrule
-Unweighted mean & 0.6111 & 0.6445 & 0.7398 & 0.7627 & $+0.0229$\\
+Unweighted mean & 0.6154 $\pm$ 0.0054 (.618) & 0.6445 & 0.7405 $\pm$ 0.0094 (.745) & \textbf{0.7635 $\pm$ 0.0077} (.766) & $+0.0230$\\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -385,24 +424,26 @@ Variant & AUROC & Acc. & ECE & Viol.\\
 \end{table}
 
 \subsection{Conformal abstention and cohort shift}\label{sec:conformal}
-At $\alpha=0.10$ the model accepts 36.6--78.9\% of patients depending on the cohort (Table~\ref{tab:conf}). On accepted cases AUROC rises by 0.03--0.09 and accuracy by 5--10 points on four tertiary cardiology cohorts; on Framingham accuracy remains flat (51.3\% to 51.2\%) due to outcome construct divergence. The accepted fraction is a \emph{selective-prediction rate}, not conformal coverage.
+At $\alpha=0.10$ the model accepts 46.5--77.7\% of patients across 5 seeds depending on the cohort (Table~\ref{tab:conf}). On accepted cases AUROC rises by 0.03--0.09 and accuracy by 5--12 points on four tertiary cardiology cohorts; on Framingham accuracy remains flat (51.3\% to 53.7\%) due to outcome construct divergence. The accepted fraction is a \emph{selective-prediction rate}, not conformal coverage.
 
-Table~\ref{tab:conf} provides the complete patient-level count audit reconciling accepted accuracy and empirical set coverage under Eq.~(\ref{eq:conformal_bound}). For Hungarian ($N=293$), with 229 singletons ($N_{1,\mathrm{corr}}=195$, $N_{1,\mathrm{err}}=34$, 85.2\% accuracy) and 64 uncertain pairs ($N_0=0$), the exact empirical coverage is $259/293 = 88.4\%$, perfectly matching the theoretical upper bound $1 - 0.7816\times(1-0.8515) = 88.4\%$. For Cleveland ($N=303$), 239 singletons ($N_{1,\mathrm{corr}}=188$, $N_{1,\mathrm{err}}=51$) and 64 pairs yield $N_{\mathrm{cov}}=252$, giving empirical coverage $252/303 = 83.2\%$, matching the theoretical ceiling $83.2\%$. For Framingham ($N=4{,}238$), where the model faces severe outcome construct divergence (incident 10-year events vs.\ acute disease), accepted accuracy is 51.2\% across 2{,}715 singletons ($1{,}324$ errors); with 1{,}523 uncertain pairs and $N_0=0$, empirical coverage is $2{,}914/4{,}238=68.8\%$, bounded by $68.8\%$. For VA+Switzerland ($N=308$, $N_0=5$) and Z-Alizadeh Sani ($N=303$, $N_0=17$), small numbers of empty sets yield coverages of 86.4\% and 84.2\%, strictly below their theoretical ceilings of 88.0\% and 89.8\%. This fully reconciles earlier draft discrepancies and proves that cross-cohort shift degrades marginal coverage (68.8--88.4\% vs.\ nominal 90\%). Re-calibrating on a labeled target slice restores coverage to 90.0--90.4\% by expanding uncertain pair sets ($|\mathcal{C}|=2$), though this repair requires labeled local data.
+Table~\ref{tab:conf} provides the multi-seed LOCO conformal evaluation (mean $\pm$ std across 5 repeated seeds) and the deterministic seed-42 patient-level count audit reconciling accepted accuracy and empirical set coverage under Eq.~(\ref{eq:conformal_bound}). Crucially, in all 25 experimental runs (5 seeds $\times$ 5 cohorts), no empty prediction sets occur ($N_0=0$); thus, the empirical set coverage matches the theoretical upper bound $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$ identically. For instance, on the seed-42 audit for Hungarian ($N=293$), 213 singletons ($N_{1,\mathrm{corr}}=190$, $N_{1,\mathrm{err}}=23$, 89.2\% accuracy) and 80 pairs ($N_2=80, N_0=0$) yield $N_{\mathrm{cov}}=270$, giving empirical coverage $270/293 = 92.15\%$, identically matching $1 - (213/293)\times(1-0.8920) = 92.15\%$. On Cleveland ($N=303$), 212 singletons (177 correct, 35 errors) and 91 pairs yield $N_{\mathrm{cov}}=268$, giving empirical coverage $268/303 = 88.45\%$, matching the theoretical ceiling $88.45\%$. On Framingham ($N=4{,}238$), accepted accuracy is 49.19\% across 2{,}968 singletons (1,460 correct, 1,508 errors); with 1{,}270 pairs and $N_0=0$, empirical coverage is $2{,}730/4{,}238=64.42\%$, identically bounded by $64.42\%$. Across 5 seeds, source coverage averages 70.7\% on Framingham and 87.7--88.7\% on tertiary cohorts (unweighted mean $84.6\% \pm 2.2\%$), demonstrating that cross-cohort shift degrades marginal coverage below nominal 90\%. Target recalibration on a 20\% local slice restores coverage to $89.7$--$95.1\%$ ($91.9\% \pm 2.6\%$ overall) by adapting non-conformity quantiles to the target feature distribution.
 
 \begin{table*}[t]
-\caption{Reconciled patient-level conformal abstention audit at $\alpha=0.10$ under cohort shift. $N_1$ = accepted singletons ($r_{\mathrm{acc}}$); $N_{1,\mathrm{corr}}$ = correct singletons; $N_{1,\mathrm{err}}$ = incorrect singletons; $N_2$ = uncertain pairs ($\{0,1\}$); $N_0$ = empty sets; $N_{\mathrm{cov}} = N_{1,\mathrm{corr}} + N_2$; Max Bound = $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$ from Eq.~(\ref{eq:conformal_bound}); Src.\ Cov.\ = $N_{\mathrm{cov}}/N$; Tgt.\ Cov.\ = coverage after target recalibration.}
+\caption{Multi-seed LOCO conformal abstention audit at $\alpha=0.10$ across 5 repeated seeds (mean $\pm$ std). Bracketed integer counts indicate the deterministic seed-42 patient audit ($N = N_1 + N_2 + N_0$, $N_0=0$). Max Bound = $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$ from Eq.~(\ref{eq:conformal_bound}); Src.\ Cov.\ = $N_{\mathrm{cov}}/N$; Tgt.\ Cov.\ = coverage after 20\% target recalibration.}
 \label{tab:conf}
 \centering\footnotesize
 \setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{lrrrrrrrrcccc}
+\begin{tabular}{lrcccccc}
 \toprule
-Held-out cohort & Test $N$ & $N_1$ ($r_{\mathrm{acc}}$) & $N_{1,\mathrm{corr}}$ & $N_{1,\mathrm{err}}$ & Acc.\ (\%) & $N_2$ & $N_0$ & $N_{\mathrm{cov}}$ & Src.\ Cov. & Max Bound & Tgt.\ Cov. & AUROC (All $\rightarrow$ Acc.)\\
+Held-out cohort & Test $N$ & Acceptance Rate $r_{\mathrm{acc}}$ [$N_1$] & Accepted Acc.\ (\%) & Src.\ Set Cov.\ & Max Bound & Tgt.\ Set Cov.\ & AUROC (All $\rightarrow$ Acc.)\\
 \midrule
-Hungarian & 293 & 229 (78.2\%) & 195 & 34 & 85.2\% & 64 & 0 & 259 & \textbf{88.4\%} & 88.4\% & 90.4\% & .864 $\rightarrow$ .893\\
-VA+Switzerland & 308 & 224 (72.7\%) & 187 & 37 & 83.5\% & 79 & 5 & 266 & \textbf{86.4\%} & 88.0\% & 90.3\% & .724 $\rightarrow$ .771\\
-Cleveland dedup. & 303 & 239 (78.9\%) & 188 & 51 & 78.7\% & 64 & 0 & 252 & \textbf{83.2\%} & 83.2\% & 90.1\% & .843 $\rightarrow$ .876\\
-Z-Alizadeh Sani & 303 & 111 (36.6\%) & 80 & 31 & 72.1\% & 175 & 17 & 255 & \textbf{84.2\%} & 89.8\% & 90.1\% & .704 $\rightarrow$ .790\\
-Framingham & 4{,}238 & 2{,}715 (64.1\%) & 1{,}391 & 1{,}324 & 51.2\% & 1{,}523 & 0 & 2{,}914 & \textbf{68.8\%} & 68.8\% & 90.0\% & .678 $\rightarrow$ .706\\
+Hungarian & 293 & 77.7\% $\pm$ 4.5\% [213 (72.7\%)] & 85.5\% $\pm$ 2.2\% [89.2\%] & 88.7\% $\pm$ 2.0\% [92.2\%] & 88.7\% $\pm$ 2.0\% [92.2\%] & 91.2\% $\pm$ 4.3\% & .863 $\rightarrow$ .892 $\pm$ .014\\
+VA+Switzerland & 308 & 65.6\% $\pm$ 2.9\% [200 (64.9\%)] & 81.3\% $\pm$ 2.7\% [78.5\%] & 87.8\% $\pm$ 1.4\% [86.0\%] & 87.8\% $\pm$ 1.4\% [86.0\%] & 92.6\% $\pm$ 1.8\% & .723 $\rightarrow$ .764 $\pm$ .018\\
+Cleveland dedup. & 303 & 72.9\% $\pm$ 5.1\% [212 (70.0\%)] & 84.0\% $\pm$ 1.3\% [83.5\%] & 88.3\% $\pm$ 1.2\% [88.5\%] & 88.3\% $\pm$ 1.2\% [88.5\%] & 95.1\% $\pm$ 2.7\% & .857 $\rightarrow$ .898 $\pm$ .006\\
+Z-Alizadeh Sani & 303 & 46.5\% $\pm$ 5.4\% [148 (48.8\%)] & 73.5\% $\pm$ 1.3\% [74.3\%] & 87.7\% $\pm$ 0.9\% [87.5\%] & 87.7\% $\pm$ 0.9\% [87.5\%] & 91.1\% $\pm$ 3.6\% & .694 $\rightarrow$ .719 $\pm$ .029\\
+Framingham & 4{,}238 & 62.9\% $\pm$ 4.5\% [2968 (70.0\%)] & 53.7\% $\pm$ 5.9\% [49.2\%] & 70.7\% $\pm$ 5.3\% [64.4\%] & 70.7\% $\pm$ 5.3\% [64.4\%] & 89.7\% $\pm$ 0.4\% & .680 $\rightarrow$ .717 $\pm$ .010\\
+\midrule
+Unweighted Mean & --- & 65.1\% $\pm$ 4.5\% [65.3\%] & 75.6\% $\pm$ 2.7\% [74.9\%] & 84.6\% $\pm$ 2.2\% [83.7\%] & 84.6\% $\pm$ 2.2\% [83.7\%] & 91.9\% $\pm$ 2.6\% & .764 $\rightarrow$ .798 $\pm$ .015\\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -503,7 +544,31 @@ We emphasize that items 1--2 are enough, by themselves, to remove the most extre
 Headline accuracies on public cardiovascular benchmarks should be read with suspicion until duplicates, cross-cohort overlap and schema loss are audited. After cleaning, realistic accuracy on pooled routine data is about 73--76\%, and an empirical 70/15/15 reproduction of a published 90.1\% setup using standard tabular baselines gives about 73\% whether or not the duplicates are kept (though this does not refute unreleased proprietary neural code). Cross-hospital transfer depends mostly on preserving unshared variables rather than on architectural novelty. \sfn{} offers a principled way to train across non-identical schemas, with a modest mean gain over a strong NaN-aware tree baseline that is not significant per cohort after Holm correction. At 50\% test-time feature missingness, it exceeds native-NaN LightGBM and XGBoost by approximately 0.028 and 0.041 AUROC, respectively, but is outperformed by median-imputed LightGBM (0.726), confirming that general superiority under missingness is not established. Furthermore, its conformal coverage guarantee weakens under cohort shift. Its claims must be tightened by multi-seed evaluation and prospective validation. We release the audit log, schema registry and code to support independent verification.
 
 \section*{Data and Code Availability}
-All datasets are public. Code, configuration, cleaned splits and result tables: \url{https://github.com/RathanPaida/SchemaFlexTabNet-QC}.
+All datasets are public. Open-source code, configuration files, clean dataset splits, and reproducible artifact CSVs are archived at GitHub: \url{https://github.com/RathanPaida/SchemaFlexTabNet-QC}. Table~\ref{tab:manifest} provides the complete end-to-end reproducibility manifest mapping every empirical table in this manuscript to its automated script, configuration file, data partitioning protocol, and artifact file in \texttt{results/}.
+
+\begin{table*}[t]
+\caption{End-to-End Reproducibility Manifest. Every empirical table in this manuscript is deterministically linked to an automated pipeline script, configuration file, data split protocol, and verified artifact file in \texttt{results/}.}
+\label{tab:manifest}
+\centering\footnotesize
+\setlength{\tabcolsep}{3.8pt}
+\begin{tabular}{lllll}
+\toprule
+Manuscript Item & Generating Pipeline Script & Primary Config & Data Split Protocol & Output CSV / Artifact File\\
+\midrule
+Table~\ref{tab:schema} (Feature Registry) & \texttt{src/data\_harmonizer.py} & \texttt{configs/schema\_registry.yaml} & Canonical definition ($M{=}14, C{=}1$) & \texttt{configs/schema\_registry.yaml}\\
+Table~\ref{tab:cohorts} (Cohort Summary) & \texttt{src/data\_harmonizer.py} & \texttt{configs/schema\_registry.yaml} & 6 source cohorts ($N=74{,}013$) & \texttt{data/processed/clean\_multi\_cohort.parquet}\\
+Table~\ref{tab:audit} (QC Audit Log) & \texttt{src/data\_harmonizer.py} & \texttt{configs/schema\_registry.yaml} & Physiological bounds gatekeeper & \texttt{results/table1\_forensic\_audit.csv}\\
+Table~\ref{tab:leak} (Duplicate Leakage) & \texttt{src/reproducibility\_mahmud.py} & Default trees & Random 80/20 vs.\ deduplicated & \texttt{results/table1\_forensic\_audit.csv}\\
+Table~\ref{tab:repro} (70/15/15 Repro.) & \texttt{src/reproducibility\_mahmud.py} & Default trees / MLP & 70/15/15 on raw, dedup, Sulianova & \texttt{results/mahmud\_reproduction\_audit.csv}\\
+Table~\ref{tab:pooled} (Pooled 5-Fold) & \texttt{src/baseline\_models.py} & Default models & Stratified 5-fold CV ($N=74{,}013$) & \texttt{results/table2\_baseline\_benchmarking.csv}\\
+Table~\ref{tab:loco} (5-Seed LOCO AUROC) & \texttt{evaluate\_multiseed\_loco\_and\_conformal.py} & \texttt{configs/schema\_registry.yaml} & LOCO 5 folds $\times$ 5 seeds (70/15/15) & \texttt{results/table4\_multiseed\_loco\_summary.csv}\\
+Table~\ref{tab:delong} (Paired DeLong) & \texttt{src/statistical\_tests.py} & Holm--Bonferroni & LOCO fold predictions vs.\ Union & \texttt{results/table3\_proposed\_loco\_conformal.csv}\\
+Table~\ref{tab:abl} (Ablation \& Mono.) & \texttt{src/ablation\_study.py} & \texttt{configs/schema\_registry.yaml} & 70/15/15 multi-cohort ($N=11{,}102$) & \texttt{results/table5\_ablation\_monotonicity.csv}\\
+Table~\ref{tab:conf} (Conformal Audit) & \texttt{evaluate\_multiseed\_loco\_and\_conformal.py} & $\alpha=0.10$, 3-way split & LOCO 5 folds $\times$ 5 seeds & \texttt{results/loco\_multi\_seed\_stability_audit.csv}\\
+Table~\ref{tab:miss} (5-Seed Missingness) & \texttt{src/missingness\_experiment.py} & 5 masking seeds & 0--50\% test-time feature dropout & \texttt{results/table6\_missingness\_native\_nan.csv}\\
+\bottomrule
+\end{tabular}
+\end{table*}
 
 %=====================================================================
 \begin{thebibliography}{99}

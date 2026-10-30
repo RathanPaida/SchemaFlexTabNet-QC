@@ -387,11 +387,11 @@ html_content = f"""<!DOCTYPE html>
 <h3 class="subsec-title">B. Experimental Partitions and Splitting Protocols</h3>
 <p class="no-indent">1) <em>Pooled 5-Fold Benchmark (N=74,013):</em> Stratified 5-fold cross-validation on all non-overlapping records (80% train, 20% test per fold).</p>
 <p class="no-indent">2) <em>Literature 70/15/15 Reproduction:</em> Stratified 70% train, 15% validation (early stopping selection), 15% test on leaked (71,025 raw), deduplicated (70,302 raw), and Sulianova pools (68,568 full QC / 68,667 minimal filter).</p>
-<p class="no-indent">3) <em>Leave-One-Cohort-Out (LOCO) Transfer:</em> In each of 5 folds, one cohort is held out as the target test cohort (Hungarian=293, VA+Sw=308, Cleveland=303, Z-Alizadeh=303, Framingham=4,238). The remaining K&minus;1 cohorts form the source pool (N&approx;69,775–73,720), split into 85% source train and 15% source validation/calibration. Checkpoints are selected by validation AUROC, temperature scaling is fitted via L-BFGS, and source conformal quantiles (q&#770;<sub>source</sub>) are calibrated on source validation data, evaluated zero-shot on 100% of target records. Target recalibration uses a 20% local target slice, evaluated on the remaining 80% target records.</p>
+<p class="no-indent">3) <em>Leave-One-Cohort-Out (LOCO) Transfer:</em> In each of 5 folds, one cohort is held out as the target test cohort (Hungarian=293, VA+Sw=308, Cleveland=303, Z-Alizadeh=303, Framingham=4,238). The remaining K&minus;1 cohorts form the source pool (N&approx;69,775–73,720), strictly partitioned into a 70% source training split (<em>D<sub>train</sub></em> for parameter optimization), a 15% source validation split (<em>D<sub>val</sub></em> for early stopping and temperature scaling <em>T*</em>), and a disjoint 15% calibration split (<em>D<sub>cal</sub></em> for finite-sample non-conformity threshold calibration <em>q&#770;</em>). Checkpoints are selected by validation AUROC, temperature scaling is fitted via L-BFGS on <em>D<sub>val</sub></em>, and source conformal quantiles (q&#770;<sub>source</sub>) are calibrated on <em>D<sub>cal</sub></em>, evaluated zero-shot on 100% of target records. Target recalibration uses a 20% local target slice, evaluated on the remaining 80% target records.</p>
 <p class="no-indent">4) <em>Missingness Stress Test and Ablation:</em> Stratified 70% train, 15% validation, and 15% held-out test multi-cohort partition (N=11,102).</p>
 
 <h3 class="subsec-title">C. Conformal Calibration and Repeated-Seed Protocol</h3>
-<p>Non-conformity scores are <em>s(x, y) = 1 &minus; P&#770;(Y=y | X=x)</em> under temperature scaling. At nominal coverage 1&minus;&alpha; = 0.90 (&alpha;=0.10), calibration quantiles q&#770; are computed at the &lceil;(n+1)(1&minus;&alpha;)&rceil;/n level. Decisions are accepted when |C(x)|=1 (decisive singleton with prediction y&#770; = argmax P&#770;) and referred when |C(x)| &in; {0, 2}. Mondrian conformal calibration computes group-conditional quantiles across sex. Missingness stress tests are averaged over <strong>5 independent random seeds</strong> ([42, 100, 2026, 777, 999]) across identical masks for all models (reporting mean &plusmn; std). LOCO matrix and ablation runs use fixed seed 42 for deterministic replication, tested via paired DeLong tests with Holm-Bonferroni correction.</p>
+<p>Non-conformity scores are <em>s(x, y) = 1 &minus; P&#770;(Y=y | X=x)</em> under temperature scaling. At nominal coverage 1&minus;&alpha; = 0.90 (&alpha;=0.10), calibration quantiles q&#770; are computed at the &lceil;(n+1)(1&minus;&alpha;)&rceil;/n level. Decisions are accepted when |C(x)|=1 (decisive singleton with prediction y&#770; = argmax P&#770;) and referred when |C(x)| &in; {0, 2}. Mondrian conformal calibration computes group-conditional quantiles across sex. Both missingness stress tests and LOCO cross-cohort / conformal evaluations are benchmarked across <strong>5 independent random seeds</strong> ([42, 100, 2026, 777, 999]) reporting empirical mean &plusmn; sample standard deviation, alongside deterministic single-seed (42) patient-level count audits and paired DeLong tests with Holm-Bonferroni correction.</p>
 
 <h3 class="subsec-title">D. Training Hyperparameters</h3>
 <p>Models are trained using PyTorch on NVIDIA GPUs with AdamW optimizer (initial lr = 1.5 &times; 10<sup>-3</sup>, cosine annealing decay to 10<sup>-5</sup> over 16 epochs, weight decay = 1 &times; 10<sup>-4</sup>), batch size 256, and gradient clipping at max norm 1.0. Loss weights are fixed at &lambda;<sub>concept</sub> = 0.10 and &lambda;<sub>mono</sub> = 1.20.</p>
@@ -427,49 +427,35 @@ html_content = f"""<!DOCTYPE html>
 </div>
 
 <h3 class="subsec-title">B. Multi-Cohort Leave-One-Cohort-Out Matrix (Table III)</h3>
-<p>Table III presents the primary out-of-cohort generalization benchmark across five held-out evaluation targets. In each experiment, models are trained on all other cohorts and evaluated zero-shot on the target cohort.</p>
+<p>Table III presents the primary out-of-cohort generalization benchmark across five held-out evaluation targets evaluated across five repeated seeds ([42, 100, 2026, 777, 999]). In each experiment, models are trained on all other cohorts and evaluated zero-shot on the target cohort.</p>
 
 <div class="tab-box">
-  <div class="tab-caption">Table III: Multi-Cohort Leave-One-Cohort-Out (LOCO) Evaluation Matrix</div>
+  <div class="tab-caption">Table III: Zero-Shot LOCO Matrix Across 5 Seeds (Mean &plusmn; Std; Seed 42 Point Estimates)</div>
   <table class="ieee-tab">
     <thead>
       <tr>
-        <th>Held-Out Target Cohort</th>
-        <th>Model Architecture</th>
-        <th class="num">Accept. Rate</th>
-        <th class="num">AUROC</th>
-        <th class="num">Accuracy</th>
-        <th class="num">ECE</th>
+        <th>Held-Out Cohort (N)</th>
+        <th class="num">Inner LGBM</th>
+        <th class="num">Union LGBM</th>
+        <th class="num">SchemaFlex Full</th>
+        <th class="num">&Delta; vs Union</th>
+        <th class="num">Accepted AUROC</th>
       </tr>
     </thead>
     <tbody>
-      <tr class="rule-mid"><td rowspan="4">UCI Hungarian<br>(N=293)</td><td>Inner-Join LightGBM</td><td class="num">100.0%</td><td class="num">0.5917</td><td class="num">55.63%</td><td class="num">0.2160</td></tr>
-      <tr class="rule-mid"><td>Union-Schema LightGBM</td><td class="num">100.0%</td><td class="num">0.8423</td><td class="num">74.06%</td><td class="num">0.1325</td></tr>
-      <tr class="rule-mid"><td>HybridTabNet-QC Baseline</td><td class="num">100.0%</td><td class="num">0.6111</td><td class="num">59.04%</td><td class="num">0.1254</td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Full)</strong></td><td class="num">100.0%</td><td class="num"><strong>0.8641</strong></td><td class="num"><strong>76.79%</strong></td><td class="num"><strong>0.1026</strong></td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Conformal)</strong></td><td class="num"><strong>78.2%</strong></td><td class="num"><strong>0.8926</strong></td><td class="num"><strong>85.15%</strong></td><td class="num"><strong>0.0756</strong></td></tr>
-      <tr class="rule-mid"><td rowspan="4">UCI VA + Switz.<br>(N=308)</td><td>Inner-Join LightGBM</td><td class="num">100.0%</td><td class="num">0.5353</td><td class="num">53.57%</td><td class="num">0.3047</td></tr>
-      <tr class="rule-mid"><td>Union-Schema LightGBM</td><td class="num">100.0%</td><td class="num"><strong>0.7280</strong></td><td class="num">72.40%</td><td class="num">0.2134</td></tr>
-      <tr class="rule-mid"><td>HybridTabNet-QC Baseline</td><td class="num">100.0%</td><td class="num">0.5451</td><td class="num">70.13%</td><td class="num">0.1921</td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Full)</strong></td><td class="num">100.0%</td><td class="num">0.7241</td><td class="num"><strong>74.03%</strong></td><td class="num"><strong>0.1382</strong></td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Conformal)</strong></td><td class="num"><strong>72.7%</strong></td><td class="num"><strong>0.7705</strong></td><td class="num"><strong>83.48%</strong></td><td class="num"><strong>0.0623</strong></td></tr>
-      <tr class="rule-mid"><td rowspan="4">UCI Cleveland<br>(N=303)</td><td>Inner-Join LightGBM</td><td class="num">100.0%</td><td class="num">0.5705</td><td class="num">56.44%</td><td class="num">0.1759</td></tr>
-      <tr class="rule-mid"><td>Union-Schema LightGBM</td><td class="num">100.0%</td><td class="num"><strong>0.8566</strong></td><td class="num"><strong>76.90%</strong></td><td class="num"><strong>0.0559</strong></td></tr>
-      <tr class="rule-mid"><td>HybridTabNet-QC Baseline</td><td class="num">100.0%</td><td class="num">0.6785</td><td class="num">62.71%</td><td class="num">0.0890</td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Full)</strong></td><td class="num">100.0%</td><td class="num">0.8433</td><td class="num">73.60%</td><td class="num">0.1209</td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Conformal)</strong></td><td class="num"><strong>78.9%</strong></td><td class="num"><strong>0.8755</strong></td><td class="num"><strong>78.66%</strong></td><td class="num"><strong>0.0946</strong></td></tr>
-      <tr class="rule-mid"><td rowspan="2">Z-Alizadeh Sani<br>(N=303)</td><td>Union-Schema LightGBM</td><td class="num">100.0%</td><td class="num">0.6028</td><td class="num">68.98%</td><td class="num">0.1148</td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Full)</strong></td><td class="num">100.0%</td><td class="num"><strong>0.7043</strong></td><td class="num">62.71%</td><td class="num">0.2072</td></tr>
-      <tr class="rule-mid"><td><strong>SchemaFlex (Conformal)</strong></td><td class="num"><strong>36.6%</strong></td><td class="num"><strong>0.7895</strong></td><td class="num"><strong>72.07%</strong></td><td class="num">0.1921</td></tr>
-      <tr class="rule-mid"><td rowspan="2">Framingham Study<br>(N=4,238)</td><td>Union-Schema LightGBM</td><td class="num">100.0%</td><td class="num">0.6695</td><td class="num"><strong>53.26%</strong></td><td class="num">0.3614</td></tr>
-      <tr class="rule-bottom"><td><strong>SchemaFlex (Full)</strong></td><td class="num">100.0%</td><td class="num"><strong>0.6778</strong></td><td class="num">51.32%</td><td class="num">0.3958</td></tr>
+      <tr class="rule-mid"><td>UCI Hungarian (293)</td><td class="num">0.598&plusmn;.006 (.605)</td><td class="num">0.843&plusmn;.013 (.856)</td><td class="num"><strong>0.863&plusmn;.015</strong> (.872)</td><td class="num">+0.0199</td><td class="num">0.892&plusmn;.014 (.909)</td></tr>
+      <tr class="rule-mid"><td>UCI VA + Switz (308)</td><td class="num">0.542&plusmn;.004 (.538)</td><td class="num"><strong>0.726&plusmn;.009</strong> (.729)</td><td class="num">0.723&plusmn;.005 (.722)</td><td class="num">-0.0032</td><td class="num">0.764&plusmn;.018 (.764)</td></tr>
+      <tr class="rule-mid"><td>UCI Cleveland (303)</td><td class="num">0.579&plusmn;.002 (.578)</td><td class="num">0.848&plusmn;.004 (.843)</td><td class="num"><strong>0.857&plusmn;.008</strong> (.855)</td><td class="num">+0.0092</td><td class="num">0.898&plusmn;.006 (.897)</td></tr>
+      <tr class="rule-mid"><td>Z-Alizadeh Sani (303)</td><td class="num">0.684&plusmn;.009 (.693)</td><td class="num">0.615&plusmn;.018 (.625)</td><td class="num"><strong>0.694&plusmn;.008</strong> (.701)</td><td class="num">+0.0788</td><td class="num">0.719&plusmn;.029 (.724)</td></tr>
+      <tr class="rule-mid"><td>Framingham (4,238)</td><td class="num">0.675&plusmn;.005 (.676)</td><td class="num">0.670&plusmn;.004 (.675)</td><td class="num"><strong>0.680&plusmn;.002</strong> (.681)</td><td class="num">+0.0103</td><td class="num">0.717&plusmn;.010 (.708)</td></tr>
+      <tr class="rule-bottom"><td>Unweighted Mean</td><td class="num">0.615&plusmn;.005 (.618)</td><td class="num">0.740&plusmn;.009 (.745)</td><td class="num"><strong>0.764&plusmn;.008</strong> (.766)</td><td class="num">+0.0230</td><td class="num">0.798&plusmn;.015 (.800)</td></tr>
     </tbody>
   </table>
 </div>
 
-<p>On UCI Hungarian, SchemaFlexTabNet-QC achieves 0.8641 AUROC (76.79% accuracy), significantly surpassing Inner-Join LightGBM (0.5917) and outperforming Union-Schema LightGBM (0.8423). Under Conformal Abstention (&alpha; = 0.10), the acceptance rate is 78.2%, and AUROC on the accepted cohort rises to <strong>0.8926</strong> (85.15% accuracy).</p>
-<p>On UCI Cleveland, Union-Schema LightGBM achieves 0.8566 AUROC vs. SchemaFlexTabNet-QC's 0.8433 (delta &minus;0.0133), demonstrating that gradient-boosted trees remain formidable baselines when trained on union schemas. However, conformal abstention on SchemaFlexTabNet-QC lifts AUROC to <strong>0.8755</strong> (78.66% accuracy).</p>
-<p>On Z-Alizadeh Sani, SchemaFlexTabNet-QC markedly outperforms Union-Schema LightGBM (0.7043 vs. 0.6028, gain +0.1015).</p>
+<p>On UCI Hungarian, SchemaFlexTabNet-QC achieves 0.8631 &plusmn; 0.0146 AUROC (seed 42: 0.8722), significantly surpassing Inner-Join LightGBM (0.5979) and outperforming Union-Schema LightGBM (0.8433). Under Conformal Abstention (&alpha; = 0.10), AUROC on the accepted cohort rises to <strong>0.8917 &plusmn; 0.0143</strong> (85.5% accuracy).</p>
+<p>On UCI Cleveland, SchemaFlexTabNet-QC achieves 0.8572 &plusmn; 0.0085 vs. 0.8480 &plusmn; 0.0035 for Union LightGBM, with conformal abstention lifting AUROC to <strong>0.8983 &plusmn; 0.0057</strong> (84.0% accuracy).</p>
+<p>On Z-Alizadeh Sani, SchemaFlexTabNet-QC markedly outperforms Union-Schema LightGBM (0.6942 vs. 0.6153, gain +0.0788).</p>
 
 <h3 class="subsec-title">C. Rigorous DeLong Significance Testing (Table IV)</h3>
 <p>Previous reports compared deep models against an inner-join LightGBM baseline, reporting extreme significance (<em>p &approx; 10<sup>-14</sup></em>). To eliminate straw-man comparisons, Table IV evaluates paired DeLong statistical significance tests [13] against the true competitor: <strong>Union-Schema NaN-Aware LightGBM</strong>, with Holm-Bonferroni step-down correction across all five cohorts.</p>
@@ -501,7 +487,7 @@ html_content = f"""<!DOCTYPE html>
   </table>
 </div>
 
-<p>Against the inner-join HybridTabNet-QC, SchemaFlexTabNet-QC is overwhelmingly superior (<em>p &lt; 10<sup>-5</sup></em> to <em>p &lt; 10<sup>-10</sup></em>). However, against Union-Schema LightGBM, the mean AUROC gain across the five cohorts is modest (+0.0229). We did not detect a statistically significant AUROC difference between SchemaFlexTabNet-QC and Union-Schema LightGBM on any individual cohort after Holm-Bonferroni correction. While this establishes that superiority was not demonstrated under the specified tests, it does not prove statistical equivalence. Given the modest sample sizes (<em>N &approx; 300</em>) of the tertiary cardiology cohorts, statistical power is limited to detect small margins (&Delta; &approx; 0.01–0.02); establishing practical equivalence requires prespecified equivalence margins and formal equivalence testing on larger cohorts.</p>
+<p>Against the inner-join HybridTabNet-QC, SchemaFlexTabNet-QC is overwhelmingly superior (<em>p &lt; 10<sup>-5</sup></em> to <em>p &lt; 10<sup>-10</sup></em>). However, against Union-Schema LightGBM, the mean AUROC gain across the five cohorts is modest (+0.0230). We did not detect a statistically significant AUROC difference between SchemaFlexTabNet-QC and Union-Schema LightGBM on any individual cohort after Holm-Bonferroni correction. While this establishes that superiority was not demonstrated under the specified tests, it does not prove statistical equivalence. Given the modest sample sizes (<em>N &approx; 300</em>) of the tertiary cardiology cohorts, statistical power is limited to detect small margins (&Delta; &approx; 0.01–0.02); establishing practical equivalence requires prespecified equivalence margins and formal equivalence testing on larger cohorts.</p>
 
 <div class="fig-box">
   <img src="{fig2_b64}" alt="Figure 2: Risk Coverage Tradeoff">
@@ -511,31 +497,29 @@ html_content = f"""<!DOCTYPE html>
 <h3 class="subsec-title">D. Conformal Cohort Shift, Mathematical Upper Bound, and Underlying Count Audit (Table V)</h3>
 <p>For binary classification on <em>N</em> evaluation patients, prediction sets satisfy |<em>C(x<sub>i</sub>)</em>| &in; {{0, 1, 2}}. Let <em>N</em><sub>0</sub> denote empty sets, <em>N</em><sub>1</sub> singleton sets (accepted predictions; <em>r</em><sub>acc</sub> = <em>N</em><sub>1</sub>/<em>N</em>), and <em>N</em><sub>2</sub> uncertain pair sets ({0, 1}), with <em>N</em> = <em>N</em><sub>0</sub> + <em>N</em><sub>1</sub> + <em>N</em><sub>2</sub>. Accepted patients achieve accuracy Acc<sub>acc</sub> = <em>N</em><sub>1,corr</sub>/<em>N</em><sub>1</sub>. Crucially, for every incorrectly predicted accepted patient, <em>C(x<sub>i</sub>)</em> = {{1 &minus; <em>y<sub>i</sub></em>}}, so the true label <em>y<sub>i</sub></em> is strictly absent. Empty sets likewise contain no labels. Therefore, true label coverage <em>y<sub>i</sub> &in; C(x<sub>i</sub>)</em> is satisfied only by correct singletons and pair sets: <em>N</em><sub>cov</sub> = <em>N</em><sub>1,corr</sub> + <em>N</em><sub>2</sub> = <em>N</em> &minus; <em>N</em><sub>0</sub> &minus; <em>N</em><sub>1</sub>(1 &minus; Acc<sub>acc</sub>). Dividing by <em>N</em> yields the exact coverage identity and theoretical upper bound:</p>
 <div class="math-block">Coverage = <em>N</em><sub>cov</sub> / <em>N</em> = 1 &minus; <em>N</em><sub>0</sub>/<em>N</em> &minus; <em>r</em><sub>acc</sub>(1 &minus; Acc<sub>acc</sub>) &le; 1 &minus; <em>r</em><sub>acc</sub>(1 &minus; Acc<sub>acc</sub>)</div>
-<p>Table V provides the complete verified count audit reconciling accepted accuracy and empirical set coverage. For Hungarian (<em>N</em>=293), with 229 singletons (195 correct, 34 errors, 85.2% accuracy) and 64 uncertain pairs (<em>N</em><sub>0</sub>=0), exact empirical coverage is 259/293 = <strong>88.4%</strong>, matching the theoretical upper bound 1 &minus; 0.7816 &times; (1 &minus; 0.8515) = 88.4%. For Cleveland (<em>N</em>=303), 239 singletons (188 correct, 51 errors) and 64 pairs yield <em>N</em><sub>cov</sub>=252, giving empirical coverage <strong>83.2%</strong>, matching the theoretical ceiling 83.2%. For Framingham (<em>N</em>=4,238), where outcome construct divergence drops accepted accuracy to 51.2% across 2,715 singletons (1,324 errors), with 1,523 uncertain pairs and <em>N</em><sub>0</sub>=0, empirical coverage is 2,914/4,238 = <strong>68.8%</strong>, bounded by 68.8%. For VA+Switzerland (<em>N</em>=308, <em>N</em><sub>0</sub>=5) and Z-Alizadeh Sani (<em>N</em>=303, <em>N</em><sub>0</sub>=17), small numbers of empty sets yield coverages of 86.4% and 84.2%, strictly below their theoretical ceilings of 88.0% and 89.8%. This fully reconciles earlier draft discrepancies and proves that cross-cohort shift degrades marginal coverage (68.8%–88.4% vs. nominal 90%).</p>
+<p>Table V provides the multi-seed LOCO conformal evaluation (mean &plusmn; std across 5 repeated seeds) and the deterministic seed-42 patient-level count audit. Crucially, in all 25 experimental runs (5 seeds &times; 5 cohorts), no empty prediction sets occur (<em>N</em><sub>0</sub>=0); thus, empirical set coverage identically matches the theoretical upper bound 1 &minus; <em>r</em><sub>acc</sub>(1 &minus; Acc<sub>acc</sub>). For Hungarian (<em>N</em>=293), seed-42 singletons <em>N</em><sub>1</sub>=213 (89.2% acc) and <em>N</em><sub>2</sub>=80 yield coverage 270/293 = <strong>92.2%</strong> (matching 92.2% bound). On Framingham (<em>N</em>=4,238), where outcome construct divergence drops accepted accuracy to 49.2% across 2,968 singletons, with 1,270 pairs and <em>N</em><sub>0</sub>=0, empirical coverage is 2,730/4,238 = <strong>64.4%</strong>, identically bounded by 64.4%. Across 5 seeds, source coverage averages 70.7% on Framingham and 87.7%–88.7% on tertiary cohorts (unweighted mean 84.6% &plusmn; 2.2%), demonstrating that cross-cohort shift degrades marginal coverage below nominal 90%. Target recalibration on a 20% local slice restores coverage to 89.7%–95.1% (91.9% &plusmn; 2.6% overall).</p>
 
 <div class="tab-box">
-  <div class="tab-caption">Table V: Reconciled Patient-Level Conformal Count Audit and Theoretical Upper Bounds</div>
+  <div class="tab-caption">Table V: Multi-Seed LOCO Conformal Audit (&alpha;=0.10, Mean &plusmn; Std Across 5 Seeds; Seed 42 Counts)</div>
   <table class="ieee-tab">
     <thead>
       <tr>
-        <th>Target Cohort</th>
+        <th>Held-Out Cohort</th>
         <th class="num">Test <em>N</em></th>
-        <th class="num"><em>N</em><sub>1</sub> (<em>r</em><sub>acc</sub>)</th>
+        <th class="num"><em>r</em><sub>acc</sub> [<em>N</em><sub>1</sub>]</th>
         <th class="num">Acc. (%)</th>
-        <th class="num"><em>N</em><sub>2</sub></th>
-        <th class="num"><em>N</em><sub>0</sub></th>
-        <th class="num"><em>N</em><sub>cov</sub></th>
         <th class="num">Src. Cov.</th>
         <th class="num">Max Bound</th>
         <th class="num">Tgt. Cov.</th>
       </tr>
     </thead>
     <tbody>
-      <tr class="rule-mid"><td>UCI Hungarian</td><td class="num">293</td><td class="num">229 (78.2%)</td><td class="num">85.2%</td><td class="num">64</td><td class="num">0</td><td class="num">259</td><td class="num"><strong>88.4%</strong></td><td class="num">88.4%</td><td class="num">90.4%</td></tr>
-      <tr class="rule-mid"><td>UCI VA + Switz.</td><td class="num">308</td><td class="num">224 (72.7%)</td><td class="num">83.5%</td><td class="num">79</td><td class="num">5</td><td class="num">266</td><td class="num"><strong>86.4%</strong></td><td class="num">88.0%</td><td class="num">90.3%</td></tr>
-      <tr class="rule-mid"><td>UCI Cleveland</td><td class="num">303</td><td class="num">239 (78.9%)</td><td class="num">78.7%</td><td class="num">64</td><td class="num">0</td><td class="num">252</td><td class="num"><strong>83.2%</strong></td><td class="num">83.2%</td><td class="num">90.1%</td></tr>
-      <tr class="rule-mid"><td>Z-Alizadeh Sani</td><td class="num">303</td><td class="num">111 (36.6%)</td><td class="num">72.1%</td><td class="num">175</td><td class="num">17</td><td class="num">255</td><td class="num"><strong>84.2%</strong></td><td class="num">89.8%</td><td class="num">90.1%</td></tr>
-      <tr class="rule-bottom"><td>Framingham Study</td><td class="num">4,238</td><td class="num">2,715 (64.1%)</td><td class="num">51.2%</td><td class="num">1,523</td><td class="num">0</td><td class="num">2,914</td><td class="num"><strong>68.8%</strong></td><td class="num">68.8%</td><td class="num">90.0%</td></tr>
+      <tr class="rule-mid"><td>UCI Hungarian</td><td class="num">293</td><td class="num">77.7%&plusmn;4.5% [213]</td><td class="num">85.5%&plusmn;2.2% [89.2%]</td><td class="num"><strong>88.7%&plusmn;2.0%</strong> [92.2%]</td><td class="num">88.7%&plusmn;2.0%</td><td class="num">91.2%&plusmn;4.3%</td></tr>
+      <tr class="rule-mid"><td>UCI VA + Switz.</td><td class="num">308</td><td class="num">65.6%&plusmn;2.9% [200]</td><td class="num">81.3%&plusmn;2.7% [78.5%]</td><td class="num"><strong>87.8%&plusmn;1.4%</strong> [86.0%]</td><td class="num">87.8%&plusmn;1.4%</td><td class="num">92.6%&plusmn;1.8%</td></tr>
+      <tr class="rule-mid"><td>UCI Cleveland</td><td class="num">303</td><td class="num">72.9%&plusmn;5.1% [212]</td><td class="num">84.0%&plusmn;1.3% [83.5%]</td><td class="num"><strong>88.3%&plusmn;1.2%</strong> [88.5%]</td><td class="num">88.3%&plusmn;1.2%</td><td class="num">95.1%&plusmn;2.7%</td></tr>
+      <tr class="rule-mid"><td>Z-Alizadeh Sani</td><td class="num">303</td><td class="num">46.5%&plusmn;5.4% [148]</td><td class="num">73.5%&plusmn;1.3% [74.3%]</td><td class="num"><strong>87.7%&plusmn;0.9%</strong> [87.5%]</td><td class="num">87.7%&plusmn;0.9%</td><td class="num">91.1%&plusmn;3.6%</td></tr>
+      <tr class="rule-mid"><td>Framingham Study</td><td class="num">4,238</td><td class="num">62.9%&plusmn;4.5% [2968]</td><td class="num">53.7%&plusmn;5.9% [49.2%]</td><td class="num"><strong>70.7%&plusmn;5.3%</strong> [64.4%]</td><td class="num">70.7%&plusmn;5.3%</td><td class="num">89.7%&plusmn;0.4%</td></tr>
+      <tr class="rule-bottom"><td>Unweighted Mean</td><td class="num">—</td><td class="num">65.1%&plusmn;4.5% [65.3%]</td><td class="num">75.6%&plusmn;2.7% [74.9%]</td><td class="num"><strong>84.6%&plusmn;2.2%</strong> [83.7%]</td><td class="num">84.6%&plusmn;2.2%</td><td class="num">91.9%&plusmn;2.6%</td></tr>
     </tbody>
   </table>
 </div>
