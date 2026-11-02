@@ -23,6 +23,9 @@ catboost_info/
 *.swp
 *.swo
 
+# Scratch / temp scripts
+scratch/
+
 # OS artifacts
 .DS_Store
 Thumbs.db

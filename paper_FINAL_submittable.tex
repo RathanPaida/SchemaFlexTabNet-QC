@@ -1,4 +1,4 @@
-\documentclass[journal]{IEEEtran}
+\documentclass[conference]{IEEEtran}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{multirow}
@@ -18,15 +18,44 @@
 
 \title{Duplicate Contamination, Schema Loss, and Cross-Cohort Generalization in Public Cardiovascular Risk Benchmarks: A Reproducibility Audit and a Schema-Flexible Tabular Transformer}
 
-\author{\IEEEauthorblockN{Raja Rathan Paida}
-\IEEEauthorblockA{Department of Artificial Intelligence\\
-Sardar Vallabhbhai National Institute of Technology (SVNIT), Surat 395007, India\\
-Email: paida.rajarthan@gmail.com}}
+\author{
+\IEEEauthorblockN{\small 1\textsuperscript{st} Raja Rathan\\Paida}
+\IEEEauthorblockA{\scriptsize\textit{Dept.\ of Artificial Intelligence}\\
+\textit{SVNIT}\\
+Surat, India\\
+paidarajarathan@gmail.com}
+\and
+\IEEEauthorblockN{\small 2\textsuperscript{nd} Sanapala\\Sanjay}
+\IEEEauthorblockA{\scriptsize\textit{Dept.\ of Artificial Intelligence}\\
+\textit{SVNIT}\\
+Surat, India\\
+sanapalasanju@gmail.com}
+\and
+\IEEEauthorblockN{\small 3\textsuperscript{rd} Chinnapureddy\\Pavan Kumar Reddy}
+\IEEEauthorblockA{\scriptsize\textit{Dept.\ of Artificial Intelligence}\\
+\textit{SVNIT}\\
+Surat, India\\
+pavanchinnapureddy@gmail.com}
+\and
+\IEEEauthorblockN{\small 4\textsuperscript{th} Golla\\Abhinav Kumar}
+\IEEEauthorblockA{\scriptsize\textit{Dept.\ of Artificial Intelligence}\\
+\textit{SVNIT}\\
+Surat, India\\
+abhinavgolla2007@gmail.com}
+\and
+\IEEEauthorblockN{\small 5\textsuperscript{th} Rinky\\Chhatwani}
+\IEEEauthorblockA{\scriptsize\textit{Dept.\ of Artificial Intelligence}\\
+\textit{SVNIT}\\
+Surat, India\\
+rinkygchhatwani@gmail.com}
+}
 
 \maketitle
+\pagestyle{plain}
+\thispagestyle{plain}
 
 \begin{abstract}
-Public cardiovascular-risk benchmarks are routinely used to report accuracies above 90\%, yet duplicated records, cross-cohort record overlap, and schema loss during dataset merging receive little scrutiny. We audit six open data sources (74{,}013 non-overlapping patients after quality control) and show that (i)~723 of 1{,}025 rows (70.5\%) in a widely used Kaggle heart-disease copy are exact duplicates, so a random 80/20 split places 97.1\% of test rows in the training set and inflates accuracy to 98.5\%, versus 77.1\% after deduplication; (ii)~all 270 UCI Statlog records match Cleveland records under a clinical signature, indicating potential duplicate derivation and warranting exclusion against leakage; (iii)~inner-join harmonization discards unshared features and drives zero-shot cross-cohort AUROC down to 0.535--0.713; and (iv)~duplicates are too few (1.02\%) to explain a published 90.1\% accuracy on a 71{,}025-row pool, where an empirical 70/15/15 reproduction using standard tabular models yields approximately 73\% with or without them. We propose \sfn{}, a feature-tokenizing transformer that models only the variables each cohort actually observes, trained with feature dropout, an auxiliary hypertension concept head and a monotonicity penalty, and deployed with temperature-scaled conformal abstention. Under leave-one-cohort-out (LOCO) evaluation across five seeds, it reaches a mean AUROC of $0.7635 \pm 0.0077$ (seed-42: 0.7662), versus $0.6154 \pm 0.0054$ for inner-join LightGBM and $0.7405 \pm 0.0094$ for NaN-aware union-schema LightGBM; against the latter, no per-cohort difference is statistically significant after Holm correction, indicating superiority was not established though formal statistical equivalence is not proven. Under 50\% test-time feature missingness, \sfn{} achieves 0.712 $\pm$ 0.005 AUROC versus 0.684 $\pm$ 0.007 for native-NaN LightGBM and 0.726 $\pm$ 0.002 for median-imputed LightGBM across repeated seeds, demonstrating that tree baselines with imputation remain competitive under missingness. Conformal sets calibrated on source cohorts under-cover on held-out hospitals (averaging 70.7\% on Framingham and 87.7--88.7\% on tertiary cohorts against a nominal 90\%), bounded strictly by accepted accuracy under Eq.~(\ref{eq:conformal_bound}) and dropping to 70.7\% on Framingham due to outcome construct divergence between cross-sectional angiographic CAD and 10-year prospective incident events.
+Papers built on public cardiovascular-risk datasets routinely report accuracies above 90\%, but they seldom check for duplicated rows, for patients who appear in more than one file, or for what is lost when datasets with different columns are merged. We went through six open data sources (74{,}013 non-overlapping patients after quality control) and found the following. First, 723 of the 1{,}025 rows (70.5\%) in a widely used Kaggle heart-disease copy are exact duplicates. A random 80/20 split therefore leaves 97.1\% of the test rows sitting in the training set as well, which pushes accuracy to 98.5\%; after deduplication it is 77.1\%. Second, all 270 UCI Statlog records match Cleveland records on a clinical signature, which points to duplicate derivation, and we drop them to avoid leakage. Third, merging by inner join discards every feature the cohorts do not share, and zero-shot cross-cohort AUROC falls to 0.535--0.713. Fourth, duplicates are only 1.02\% of the data and cannot account for a published 90.1\% accuracy on a 71{,}025-row pool; when we reproduced that 70/15/15 setup with standard tabular models we got roughly 73\% whether or not the duplicates were kept. We also propose \sfn{}, a feature-tokenizing transformer that models only the variables a cohort actually records. It is trained with feature dropout, an auxiliary hypertension concept head and a monotonicity penalty, and it abstains through temperature-scaled conformal prediction. In leave-one-cohort-out (LOCO) evaluation over five seeds its mean AUROC is $0.7635 \pm 0.0077$ (seed-42: 0.7662), compared with $0.6154 \pm 0.0054$ for inner-join LightGBM and $0.7405 \pm 0.0094$ for NaN-aware union-schema LightGBM. Against that last baseline no per-cohort difference is significant after Holm correction, so we could not establish superiority, although we have not shown equivalence either. When 50\% of the features are missing at test time, \sfn{} reaches 0.712 $\pm$ 0.005 AUROC, while native-NaN LightGBM gets 0.684 $\pm$ 0.007 and median-imputed LightGBM 0.726 $\pm$ 0.002 over repeated seeds, so tree models with imputation hold up well. Conformal sets calibrated on the source cohorts under-cover on held-out hospitals, averaging 70.7\% on Framingham and 87.7--88.7\% on the tertiary cohorts against a nominal 90\%. Eq.~(\ref{eq:conformal_bound}) ties this coverage to the accuracy of the accepted predictions, and the fall to 70.7\% on Framingham traces back to a mismatch in outcome construct: cross-sectional angiographic CAD in one case, 10-year prospective incident events in the other.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -35,31 +64,31 @@ Cardiovascular risk prediction, tabular transformers, data leakage, multi-cohort
 
 %=====================================================================
 \section{Introduction}
-\IEEEPARstart{C}{ardiovascular} disease (CVD) causes roughly 17.9 million deaths per year worldwide. Machine-learning risk models are attractive for screening, but accuracies published on public benchmarks frequently exceed what noisy routine records can support, and they rarely survive transfer to a new hospital. Two well-documented sources of optimism are leakage between training and test data~\cite{kapoor2023} and near-duplicate records in benchmark files~\cite{barz2020}. A third, specific to multi-source clinical work, is the harmonization step itself: merging cohorts through an inner join keeps only the columns present everywhere and silently discards the most diagnostic variables of specialist cohorts (chest-pain type, exercise ECG response, vessel counts).
+\IEEEPARstart{C}{ardiovascular} disease (CVD) kills roughly 17.9 million people every year worldwide. Machine-learning risk models look promising for screening, yet the accuracies reported on public benchmarks are often higher than noisy routine records can really support, and they rarely survive a move to another hospital. Two causes of this optimism are well known: leakage between training and test data~\cite{kapoor2023}, and near-duplicate records in benchmark files~\cite{barz2020}. When several sources are combined there is a third, which comes from the harmonization step itself. An inner join keeps only the columns that every cohort has, so the variables that matter most in specialist cohorts (chest-pain type, exercise ECG response, vessel counts) quietly disappear.
 
-A recent study, \htn{}~\cite{mahmud2026}, reports 90.1\% accuracy and 93.6\% AUROC on a merger of two Kaggle datasets, using a transformer encoder fused with engineered meta-features (BMI, pulse pressure, and a cholesterol--glucose product). Motivated by the gap between that figure and what we observe on clean data, this paper makes four contributions:
+A recent study, \htn{}~\cite{mahmud2026}, reports 90.1\% accuracy and 93.6\% AUROC on a combination of two Kaggle datasets. Its model pairs a transformer encoder with hand-built features: BMI, pulse pressure and a product of cholesterol and glucose. We could not get anywhere near those numbers on clean data, and that gap is what prompted this work. The paper makes four contributions.
 \begin{enumerate}
-\item \textbf{A data audit} of six public sources quantifying exact-duplicate contamination, cross-cohort patient overlap and physiologically implausible records, with a deterministic plausibility gatekeeper and a reproducible audit log.
-\item \textbf{A reproducibility analysis} of~\cite{mahmud2026} that documents internal inconsistencies, bounds what the duplicate issue can explain, and reports a 70/15/15 reproduction of the published setup.
-\item \textbf{\sfn{}}, a schema-flexible tokenizing transformer that trains across cohorts with non-identical columns, with physiological regularizers and conformal abstention.
-\item \textbf{A leave-one-cohort-out benchmark} against strong baselines, including a NaN-aware union-schema gradient-boosting model, with Holm-corrected DeLong tests, ablations, missingness stress tests against native-NaN trees, a conformal cohort-shift audit, and subgroup, federated and decision-curve analyses.
+\item \textbf{A data audit} of six public sources that measures how many exact duplicates, overlapping patients and physiologically impossible records they contain. It relies on a deterministic plausibility gatekeeper and produces a reproducible audit log.
+\item \textbf{A reproducibility analysis} of~\cite{mahmud2026}. We point out inconsistencies inside that article, work out how much of its result the duplicates could explain, and reproduce its 70/15/15 setup.
+\item \textbf{\sfn{}}, a schema-flexible tokenizing transformer that can be trained on cohorts whose columns do not match, with physiological regularizers and conformal abstention.
+\item \textbf{A leave-one-cohort-out benchmark} against strong baselines, among them a NaN-aware gradient-boosting model on the union schema. It includes Holm-corrected DeLong tests, ablations, missingness stress tests against native-NaN trees, a conformal cohort-shift audit, and subgroup, federated and decision-curve analyses.
 \end{enumerate}
-The paper is organized as follows. Section~\ref{sec:related} reviews related work, Section~\ref{sec:data} describes data and quality control, Section~\ref{sec:audit} presents the audit, Section~\ref{sec:method} the method, Section~\ref{sec:protocol} the protocol, Section~\ref{sec:results} the results, Section~\ref{sec:discussion} the discussion and limitations, and Section~\ref{sec:conclusion} concludes.
+Section~\ref{sec:related} covers related work and Section~\ref{sec:data} the data and quality control. The audit is in Section~\ref{sec:audit}, the method in Section~\ref{sec:method} and the experimental protocol in Section~\ref{sec:protocol}. Results follow in Section~\ref{sec:results}, discussion and limitations in Section~\ref{sec:discussion}, and Section~\ref{sec:conclusion} concludes.
 
 %=====================================================================
 \section{Related Work}\label{sec:related}
-\textbf{Tabular deep learning.} FT-Transformer~\cite{gorishniy2021}, TabNet~\cite{arik2021} and SAINT~\cite{somepalli2021} show that attention over feature tokens is competitive on tabular data, although gradient-boosted trees such as LightGBM~\cite{ke2017} remain strong baselines. Our tokenizer follows the feature-token idea but treats the \emph{set of observed features} as the input, so unobserved columns are masked rather than imputed.
+\textbf{Tabular deep learning.} Attention over feature tokens has been shown to work on tabular data in FT-Transformer~\cite{gorishniy2021}, TabNet~\cite{arik2021} and SAINT~\cite{somepalli2021}, although gradient-boosted trees such as LightGBM~\cite{ke2017} remain hard to beat. We reuse the idea of one token per feature, but our input is the \emph{set of features actually observed}, so a missing column is masked out and no value is filled in.
 
-\textbf{Domain knowledge in models.} Concept bottleneck models~\cite{koh2020} supervise intermediate, human-interpretable concepts, and monotonic models~\cite{gupta2016} encode the prior that risk should not fall as a harmful marker rises. We use both as soft regularizers rather than hard architectural constraints.
+\textbf{Domain knowledge in models.} Concept bottleneck models~\cite{koh2020} add supervision on intermediate, human-readable concepts, while monotonic models~\cite{gupta2016} encode the expectation that risk should not drop when a harmful marker goes up. In our model both act as soft penalties and not as hard constraints on the architecture.
 
-\textbf{Calibration and abstention.} Temperature scaling~\cite{guo2017} and conformal prediction~\cite{vovk2005,angelopoulos2023} provide calibrated probabilities and set-valued predictions with finite-sample coverage under exchangeability. That assumption fails under cohort shift~\cite{tibshirani2019,barber2023}, which matters for our setting and which we measure directly (Section~\ref{sec:conformal}).
+\textbf{Calibration and abstention.} Temperature scaling~\cite{guo2017} gives better calibrated probabilities, and conformal prediction~\cite{vovk2005,angelopoulos2023} produces prediction sets whose coverage holds in finite samples if the data are exchangeable. A change of cohort breaks that condition~\cite{tibshirani2019,barber2023}. This is relevant to our setting, so we measure the effect directly (Section~\ref{sec:conformal}).
 
-\textbf{Reporting standards.} TRIPOD+AI~\cite{collins2024} and leakage checklists~\cite{kapoor2023} motivate the audit-first design of this work.
+\textbf{Reporting standards.} We built the work around an audit because of TRIPOD+AI~\cite{collins2024} and the leakage checklists in~\cite{kapoor2023}.
 
 %=====================================================================
 \section{Data and Quality Control}\label{sec:data}
 \subsection{Sources}
-We use six public sources: UCI Heart Disease from four institutions (Cleveland, Hungarian, Switzerland, VA Long Beach)~\cite{dua2019,detrano1989}; the Kaggle heart-disease copy (1{,}025 rows); the Sulianova cardiovascular dataset (70{,}000 examination records); a Framingham teaching subset (4{,}240 records)~\cite{dawber1951}; UCI Statlog Heart (270 records); and the Z-Alizadeh Sani angiography cohort (303 records; 56 clinical and laboratory variables)~\cite{alizadehsani2013}.
+We use six public sources. The first is the UCI Heart Disease collection, which holds data from four institutions (Cleveland, Hungarian, Switzerland, VA Long Beach)~\cite{dua2019,detrano1989}. The others are the Kaggle heart-disease copy (1{,}025 rows), the Sulianova cardiovascular dataset (70{,}000 examination records), a Framingham teaching subset (4{,}240 records)~\cite{dawber1951}, UCI Statlog Heart (270 records), and the Z-Alizadeh Sani angiography cohort (303 records with 56 clinical and laboratory variables)~\cite{alizadehsani2013}.
 
 \subsection{Canonical feature registry}\label{sec:schema}
 The multi-cohort canonical schema registry defines $M=14$ clinical features:
@@ -67,14 +96,15 @@ The multi-cohort canonical schema registry defines $M=14$ clinical features:
 \item \textbf{8 continuous variables}: age (\texttt{age\_years}), systolic blood pressure (\texttt{systolic\_bp}), diastolic blood pressure (\texttt{diastolic\_bp}), body mass index (\texttt{bmi}), pulse pressure (\texttt{pulse\_pressure} = $\mathrm{SBP}-\mathrm{DBP}$), total serum cholesterol (\texttt{chol\_mgdl}), maximum heart rate achieved (\texttt{max\_hr\_thalach}), and exercise-induced ST depression (\texttt{st\_depression\_oldpeak}).
 \item \textbf{6 categorical/ordinal variables}: biological sex (\texttt{sex\_male}), Adult Treatment Panel III cholesterol risk tier (\texttt{chol\_tier}), fasting glucose / diabetes classification tier (\texttt{gluc\_tier}), chest pain symptom presentation (\texttt{chest\_pain\_type}), exercise-induced angina (\texttt{exercise\_angina}), and smoking history (\texttt{smoker}).
 \end{itemize}
-In addition, the registry defines \textbf{one derived auxiliary clinical concept label} ($C=1$): Stage~2 hypertension (\texttt{concept\_hypertension}: $\mathrm{SBP}\ge 140$ or $\mathrm{DBP}\ge 90$~mmHg), which provides auxiliary multi-task supervision for interpretive bottleneck regularization during training ($\lambda_{\mathrm{concept}}=0.10$) and is not supplied as an input feature.
-The baseline inner-join merge restricts input features to the $M_{\mathrm{shared}}=5$ clinical attributes universally recorded across all cohorts (\texttt{age\_years}, \texttt{sex\_male}, \texttt{systolic\_bp}, \texttt{chol\_tier}, \texttt{smoker}), whereas the union schema provides access to all $M=14$ canonical features. Variables that a cohort does not record are preserved as structurally \emph{absent} tokens masked in self-attention, rather than statically imputed. Table~\ref{tab:schema} provides the exact registry definitions, measurement units, clinical plausibility ranges, derivation formulas, and source column mappings across all six cohorts, matching \texttt{configs/schema\_registry.yaml} and \texttt{src/data\_harmonizer.py}.
+The registry also contains \textbf{one derived auxiliary clinical concept label} ($C=1$), Stage~2 hypertension (\texttt{concept\_hypertension}, defined as $\mathrm{SBP}\ge 140$ or $\mathrm{DBP}\ge 90$~mmHg). During training it supplies extra multi-task supervision as a bottleneck-style regularizer ($\lambda_{\mathrm{concept}}=0.10$); it is never given to the model as an input.
+The baseline inner-join merge uses only the $M_{\mathrm{shared}}=5$ attributes that every cohort records (\texttt{age\_years}, \texttt{sex\_male}, \texttt{systolic\_bp}, \texttt{chol\_tier}, \texttt{smoker}). The union schema gives access to all $M=14$ canonical features. When a cohort does not record a variable, it stays in the data as an \emph{absent} token that is masked in self-attention and is not imputed. Table~\ref{tab:schema} lists the exact definitions, units, plausibility ranges, derivation formulas and source-column mappings for the six cohorts, and it matches \texttt{configs/schema\_registry.yaml} and \texttt{src/data\_harmonizer.py}.
 
 \begin{table*}[t]
 \caption{Canonical feature registry ($M=14$ clinical features and $C=1$ auxiliary concept target). $M_{\mathrm{shared}}=5$ marks variables universally recorded across all cohorts (inner join). All definitions match \texttt{configs/schema\_registry.yaml} and \texttt{src/data\_harmonizer.py}.}
 \label{tab:schema}
 \centering\footnotesize
 \setlength{\tabcolsep}{3.5pt}
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{%
 \begin{tabular}{lllllp{4.6cm}}
 \toprule
 Canonical Name & Type & Unit / Domain & Plausible Bounds & Derivation / Formula & Source Variables Across Cohorts\\
@@ -98,11 +128,11 @@ Canonical Name & Type & Unit / Domain & Plausible Bounds & Derivation / Formula 
 \multicolumn{6}{l}{\emph{Auxiliary Clinical Concept Target ($C=1$; not supplied as input feature):}}\\
 \texttt{concept\_hypertension} & Binary Label & $\{0, 1\}$ & Stage 2 HTN & $\mathrm{SBP}\ge 140$ or $\mathrm{DBP}\ge 90$~mmHg & Multi-task supervision head ($\lambda_{\mathrm{concept}}=0.10$)\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table*}
 
 \subsection{Plausibility gatekeeper}
-Instead of a statistical $|Z|>3$ filter, records are rejected if they violate physiological bounds (age 18--110~y; SBP 60--260; DBP 40--160~mmHg; BMI 12--70; cholesterol 80--650~mg/dL; heart rate 50--230~bpm; ST depression 0--10~mm) or hemodynamic consistency (SBP $-$ DBP $\ge$ 10~mmHg). Exact patient-level duplicates are removed. Table~\ref{tab:audit} gives the audit log. The eight clean cohorts sum to 74{,}283 records; excluding the 270 Statlog rows whose clinical measurement signatures match Cleveland records leaves 74{,}013 non-overlapping patients, which is the pool used throughout the paper. Sulianova contributes 92.6\% of these (68{,}568 of 74{,}013), a fact that shapes several conclusions below.
+Rather than a statistical $|Z|>3$ filter, we reject records that fall outside physiological bounds (age 18--110~y; SBP 60--260; DBP 40--160~mmHg; BMI 12--70; cholesterol 80--650~mg/dL; heart rate 50--230~bpm; ST depression 0--10~mm) or that are hemodynamically inconsistent (SBP $-$ DBP $\ge$ 10~mmHg). Exact patient-level duplicates are dropped as well, and Table~\ref{tab:audit} shows the audit log. The eight clean cohorts add up to 74{,}283 records. Removing the 270 Statlog rows, whose clinical signatures match Cleveland records, leaves 74{,}013 non-overlapping patients, and this is the pool used throughout. Sulianova makes up 92.6\% of it (68{,}568 of 74{,}013), which colours several of the conclusions below.
 
 \begin{table*}[t]
 \caption{Cohort summary. ``Cardiology variables'' denotes chest-pain type, peak heart rate, exercise angina, ST depression and vessel count. Outcome definitions differ across sources and are mapped to one binary label.}
@@ -149,7 +179,7 @@ Z-Alizadeh Sani & 303 & 0 & 0 & 303\\
 %=====================================================================
 \section{Reproducibility Audit}\label{sec:audit}
 \subsection{Duplicate leakage and cohort overlap}
-The Kaggle heart copy contains only 302 unique patients; the remaining 723 rows (70.5\%) are exact copies. Under a random 80/20 split, 199 of 205 test rows (97.1\%) have an identical twin in the training set. Evaluating on that split yields near-perfect scores that vanish once duplicates are removed (Table~\ref{tab:leak}). A signature match on age, sex, resting blood pressure, cholesterol, peak heart rate and ST depression further shows that all 270 Statlog records match Cleveland records under this clinical-feature signature. While matching clinical measurements alone cannot conclusively verify unique biological patient identity without institutional identifiers, this exact match strongly indicates record-level overlap or duplicate derivation from the same underlying registry; treating these records as overlapping is a necessary and prudent precaution against data leakage, so we excluded the overlap from every cross-cohort experiment.
+The Kaggle heart copy holds only 302 distinct patients, and the other 723 rows (70.5\%) are exact copies. With a random 80/20 split, 199 of the 205 test rows (97.1\%) have an identical twin in the training set. Scores on such a split are almost perfect and vanish once the duplicates are gone (Table~\ref{tab:leak}). We also compared records on age, sex, resting blood pressure, cholesterol, peak heart rate and ST depression. All 270 Statlog records match a Cleveland record on this signature. Without institutional identifiers, matching measurements cannot prove that two records describe the same person. An exact match still points strongly to overlap, or to both files being derived from the same registry, and treating them as overlapping is the safer choice against leakage. We therefore left the overlap out of every cross-cohort experiment.
 
 \begin{table}[t]
 \caption{Effect of duplicate leakage on a small cardiology benchmark.}
@@ -167,17 +197,17 @@ Examination data only & Sulianova (68{,}568) & 73.21\% & 0.7943\\
 \end{table}
 
 \subsection{Observations on the published \htn{} results}
-We did not have access to code or splits for~\cite{mahmud2026}, and we do not claim to know why its figures differ from ours. We report only what can be checked from the article itself, plus a reproduction of its stated split.
+We had no access to the code or splits of~\cite{mahmud2026} and cannot say why its figures differ from ours. What follows is limited to what can be checked in the article itself, together with a reproduction of its stated split.
 \begin{itemize}
-\item \textbf{Inconsistent confusion matrices.} The text describes a matrix with 980/1{,}100 negatives and 990/1{,}100 positives correct (accuracy 89.5\%), whereas Fig.~2 of that article shows 4{,}795/533/395/4{,}930 on 10{,}653 samples, implying accuracy 91.3\% and positive-class recall 0.926, against 0.90 in its Table~1.\footnote{The project implementation reports list an alternative matrix (5{,}044/4{,}688/444/477). We use the values from the published LaTeX, which are consistent with the ``balanced 5{,}328 vs.\ 5{,}325'' description. Readers should verify against the published figure.}
-\item \textbf{Class balance.} The test set is described as balanced (5{,}328 vs.\ 5{,}325), while the preprocessing section describes a roughly 1:2 minority-to-majority imbalance with class weights 0.45/0.55.
-\item \textbf{Test-set size.} 10{,}653 equals 15\% of 71{,}025, the sum of the raw rows of the two Kaggle files ($1{,}025+70{,}000$). This is consistent with the duplicated 1{,}025-row copy having been used, and with little row removal despite the described outlier filtering.
-\item \textbf{Limits of the duplicate explanation.} The 723 duplicate rows represent $723/71{,}025=1.02\%$ of the pooled set. In an illustrative fixed-prediction calculation where predictions on non-duplicate records remain invariant, even if every duplicate row were classified correctly, raising their accuracy from about 73\% to 100\% would lift overall accuracy by only about $0.0102\times(1-0.73)\approx 0.30$ percentage points. While duplicate retention can also perturb model weights, split compositions and predictions on other records, our controlled retraining experiments confirm this order of magnitude: accuracy changes by only $+0.30$ points (73.18\% vs.\ 73.48\%). Duplicates therefore cannot by themselves explain 90.1\% accuracy on a pool that is 98.6\% Sulianova, where well-tuned models in our benchmark reach roughly 73--76\%.
-\item \textbf{Engineered features are not architecture-specific.} Adding BMI, pulse pressure and tier features changes AUROC by $+0.0014$ (MLP) to $+0.0124$ (logistic regression) across seven model families (Section~\ref{sec:pooled}). Work~\cite{mahmud2026} states that baselines were retrained under the same pipeline, so we do not allege unequal treatment; we show only that the features help every model.
+\item \textbf{Inconsistent confusion matrices.} In the text, 980 of 1{,}100 negatives and 990 of 1{,}100 positives are classified correctly (accuracy 89.5\%). Fig.~2 of the article shows 4{,}795/533/395/4{,}930 on 10{,}653 samples instead, which means 91.3\% accuracy and a positive-class recall of 0.926, while its Table~1 gives 0.90.\footnote{The project implementation reports list an alternative matrix (5{,}044/4{,}688/444/477). We use the values from the published LaTeX, which are consistent with the ``balanced 5{,}328 vs.\ 5{,}325'' description. Readers should verify against the published figure.}
+\item \textbf{Class balance.} The test set is called balanced (5{,}328 vs.\ 5{,}325), yet the preprocessing section speaks of a minority-to-majority imbalance of about 1:2 and class weights of 0.45/0.55.
+\item \textbf{Test-set size.} The number 10{,}653 is 15\% of 71{,}025, the combined raw row count of the two Kaggle files ($1{,}025+70{,}000$). That is what one would expect if the duplicated 1{,}025-row copy was used and very few rows were removed, despite the outlier filtering the article describes.
+\item \textbf{Limits of the duplicate explanation.} The 723 duplicate rows are $723/71{,}025=1.02\%$ of the pooled set. Suppose, as a rough illustration, that predictions on all other records do not change. Even if every duplicate were then classified correctly, so that their accuracy rose from about 73\% to 100\%, overall accuracy would go up by only about $0.0102\times(1-0.73)\approx 0.30$ percentage points. Duplicates could in principle also change the fitted weights, the split composition and the predictions on other records. Our controlled retraining shows the same order of magnitude, though, with accuracy moving by just $+0.30$ points (73.18\% vs.\ 73.48\%). Duplicates cannot by themselves explain 90.1\% accuracy on a pool that is 98.6\% Sulianova, where well-tuned models in our benchmark reach roughly 73--76\%.
+\item \textbf{Engineered features are not architecture-specific.} Adding BMI, pulse pressure and the tier features changes AUROC by between $+0.0014$ (MLP) and $+0.0124$ (logistic regression) across seven model families (Section~\ref{sec:pooled}). The authors of~\cite{mahmud2026} say that the baselines were retrained in the same pipeline, so we are not alleging unequal treatment. Our point is only that these features help every model.
 \end{itemize}
 
 \subsection{Reproduction of the 70/15/15 setup}
-We explicitly distinguish between (i)~a reproduction of the reported data-processing and splitting protocol using standard tabular baselines, (ii)~a baseline replication, and (iii)~an architecture-faithful reproduction of the original neural model. Lacking the original code, random seeds, and split indices of~\cite{mahmud2026}, we implemented the stated 70/15/15 train/validation/test protocol on the raw 71{,}025-row pool, the deduplicated pool (70{,}302), and Sulianova alone (70{,}000), using the same hemodynamic filtering and standard LightGBM, Random Forest, and MLP baselines with default hyperparameters and the engineered meta-features described in~\cite{mahmud2026}. Table~\ref{tab:repro} shows that all three configurations land at about 73\% accuracy and 0.795--0.799 AUROC. Keeping the duplicates changes accuracy by $+0.30$ points, matching the fixed-prediction estimate. We could not reproduce 90.1\% with these features and this protocol using standard tabular models. Because original neural weights and splits remain unreleased, we cannot determine whether the original transformer architecture achieved 90.1\% through unstated preprocessing, hyperparameter optimization, or reporting discrepancies; we recommend release of splits and code.
+Three things need to be kept apart here: (i)~reproducing the reported data processing and splitting with standard tabular baselines, (ii)~replicating the baselines, and (iii)~faithfully reproducing the original neural architecture. The original code, seeds and split indices of~\cite{mahmud2026} were not available to us, so we implemented the stated 70/15/15 train/validation/test protocol ourselves. We applied it to the raw 71{,}025-row pool, to the deduplicated pool (70{,}302) and to Sulianova alone (70{,}000). All runs used the same hemodynamic filtering, standard LightGBM, Random Forest and MLP baselines with default hyperparameters, and the engineered meta-features of~\cite{mahmud2026}. All three configurations end up near 73\% accuracy and 0.795--0.799 AUROC (Table~\ref{tab:repro}). Keeping the duplicates shifts accuracy by $+0.30$ points, as the fixed-prediction estimate predicted. We were unable to reproduce 90.1\% with these features, this protocol and standard tabular models. Because the neural weights and splits are unreleased, we cannot tell whether the original transformer got there through unstated preprocessing, hyperparameter tuning or reporting discrepancies. Releasing the splits and code would settle this.
 
 \begin{table}[t]
 \caption{Reproduction of the published 70/15/15 setup. Clean $N$ reflects physiological filtering.}
@@ -200,7 +230,7 @@ Sulianova alone, minimal vital filter$^\dagger$ & 68{,}667 & 10{,}301 & 73.42 & 
 
 %=====================================================================
 \section{Method: \sfn{}}\label{sec:method}
-Fig.~\ref{fig:arch} summarizes the architecture.
+Fig.~\ref{fig:arch} sketches the architecture.
 
 \begin{figure}[t]
 \centering
@@ -229,13 +259,13 @@ For patient $i$ with observed feature set $\mathcal{F}_i$, each observed feature
 \begin{equation}
 z_{ij}=e_{\mathrm{name}}(f_j)+w_j\,x_{ij}+b_j,
 \end{equation}
-where $e_{\mathrm{name}}(f_j)\in\mathbb{R}^d$ is a learned feature-identity embedding and $(w_j,b_j)$ is a feature-specific linear projection (categorical variables use learned value embeddings). Continuous inputs are z-scored with training statistics. A learnable \texttt{[CLS]} token is prepended and a key-padding mask removes unobserved features from attention, so no inner join, zero-fill or imputation is needed. The encoder has 2 layers, 4 heads, width $d=64$, feed-forward width 128 and dropout 0.10.
+where $e_{\mathrm{name}}(f_j)\in\mathbb{R}^d$ is a learned embedding that identifies the feature, and $(w_j,b_j)$ is a feature-specific linear projection (categorical variables use learned value embeddings). Continuous inputs are z-scored with training statistics. We prepend a learnable \texttt{[CLS]} token and use a key-padding mask to keep unobserved features out of attention, so there is no inner join, zero-fill or imputation. The encoder has 2 layers and 4 heads, width $d=64$, feed-forward width 128 and dropout 0.10.
 
 \subsection{Feature dropout}
-During training each observed token is dropped with probability $p_{\mathrm{mask}}=0.20$, simulating hospitals that supply only part of the panel and forcing the encoder not to rely on any single variable.
+At training time every observed token is dropped with probability $p_{\mathrm{mask}}=0.20$. This mimics hospitals that report only part of the panel, and it stops the encoder from leaning on any one variable.
 
 \subsection{Concept head and monotonicity}
-The \texttt{[CLS]} representation also predicts Stage~2 hypertension, giving $\mathcal{L}_{\mathrm{concept}}$ (binary cross-entropy). Monotonicity is encouraged in two ways for the set of harmful markers $\mathcal{M}=\{$age, SBP, cholesterol, ST depression$\}$. First, the logit contains a residual branch with softplus-constrained, hence non-negative, weights:
+The \texttt{[CLS]} representation also predicts Stage~2 hypertension, which adds the binary cross-entropy term $\mathcal{L}_{\mathrm{concept}}$. We push the model toward monotonicity in two ways, for the harmful markers $\mathcal{M}=\{$age, SBP, cholesterol, ST depression$\}$. The first is a residual branch in the logit whose weights pass through a softplus and are therefore non-negative:
 \begin{equation}
 \hat z_i=\mathbf{w}_{\mathrm{out}}^{\top}\mathbf{h}^{\mathrm{CLS}}_i+b_0+\sum_{k\in\mathcal{M}}\mathrm{softplus}(w_k)\,x_{ik}\,\mathbb{I}[x_{ik}\ \text{observed}],
 \end{equation}
@@ -247,35 +277,41 @@ The total loss is
 \begin{equation}
 \mathcal{L}=\mathcal{L}_{\mathrm{BCE}}+\lambda_1\mathcal{L}_{\mathrm{concept}}+\lambda_2\mathcal{L}_{\mathrm{mono}},
 \end{equation}
-with $\lambda_1=0.10$ and $\lambda_2=1.20$. Because the attention path is unconstrained, neither mechanism guarantees monotonicity; we therefore \emph{measure} violations (Section~\ref{sec:ablation}).
+with $\lambda_1=0.10$ and $\lambda_2=1.20$. Nothing constrains the attention path, so neither mechanism guarantees monotonicity, and we \emph{measure} violations instead (Section~\ref{sec:ablation}).
 
 \subsection{Calibration and conformal procedure}\label{sec:conformal_theory}
-To guarantee valid distribution-free coverage under exchangeability, the model-fitting validation split and the conformal calibration split must be strictly separated. Reusing labeled calibration data to fit post-hoc probability calibration (e.g., temperature scaling) or early stopping introduces optimization bias and invalidates standard split-conformal exchangeability. We therefore enforce a strict \emph{three-way source partitioning protocol}:
+Split conformal prediction only gives valid distribution-free coverage when the data used to fit the model and the data used for conformal calibration are kept apart. If labeled calibration data are also used to fit a post-hoc probability calibration (temperature scaling, say) or to stop training early, optimization bias creeps in and the exchangeability argument no longer holds. We therefore use a \emph{three-way source partitioning protocol}:
 \begin{enumerate}
-\item \emph{Training split} ($D_{\mathrm{train}}$, 70\% of source pool): used exclusively for optimizing network parameters $\theta$.
-\item \emph{Validation split} ($D_{\mathrm{val}}$, 15\% of source pool): used for early stopping checkpoint selection and fitting the scalar temperature $T^*$ via L-BFGS to minimize negative log-likelihood on uncalibrated logits $z(x)$.
-\item \emph{Calibration split} ($D_{\mathrm{cal}}$, 15\% of source pool): a strictly disjoint, untouched partition with $n$ patients. With $(\theta, T^*)$ frozen, calibrated probabilities $p_y(x) = \sigma(z(x)/T^*)$ yield non-conformity scores $s(x,y) = 1 - p_y(x) \in [0, 1]$.
+\item \emph{Training split} ($D_{\mathrm{train}}$, 70\% of source pool): used only to fit the network parameters $\theta$.
+\item \emph{Validation split} ($D_{\mathrm{val}}$, 15\% of source pool): used to pick the early-stopping checkpoint and to fit the scalar temperature $T^*$ with L-BFGS, by minimizing the negative log-likelihood of the uncalibrated logits $z(x)$.
+\item \emph{Calibration split} ($D_{\mathrm{cal}}$, 15\% of source pool): a disjoint partition of $n$ patients that is never touched during training. Once $(\theta, T^*)$ are frozen, the calibrated probabilities $p_y(x) = \sigma(z(x)/T^*)$ give non-conformity scores $s(x,y) = 1 - p_y(x) \in [0, 1]$.
 \end{enumerate}
-Because $D_{\mathrm{cal}}$ is disjoint from both $D_{\mathrm{train}}$ and $D_{\mathrm{val}}$, the score function $s(x,y)$ is deterministic with respect to $D_{\mathrm{cal}}$. Conditional on the fitted model, scores on $D_{\mathrm{cal}}$ and on any i.i.d.\ test point $(X_{n+1}, Y_{n+1}) \sim P_{\mathrm{source}}$ are strictly exchangeable.
+Because $D_{\mathrm{cal}}$ is disjoint from both $D_{\mathrm{train}}$ and $D_{\mathrm{val}}$, the score function $s(x,y)$ is deterministic with respect to $D_{\mathrm{cal}}$. Given the fitted model, the scores on $D_{\mathrm{cal}}$ and on any i.i.d.\ test point $(X_{n+1}, Y_{n+1}) \sim P_{\mathrm{source}}$ are exchangeable.
 At nominal error rate $\alpha=0.10$ ($1-\alpha=90\%$ target coverage), the finite-sample adjusted conformal quantile threshold is computed on $n$ calibration samples as:
 \begin{equation}
 \hat{q} = \mathrm{Quantile}\left(\{s(x_i, y_i)\}_{i=1}^n; \; \frac{\lceil (n+1)(1-\alpha) \rceil}{n}\right).
 \end{equation}
 The prediction set for a test patient $x$ is:
 \begin{equation}
-\mathcal{C}(x) = \{y \in \{0, 1\} : s(x, y) \le \hat{q}\} = \{y \in \{0, 1\} : p_y(x) \ge 1 - \hat{q}\}.
+\begin{split}
+\mathcal{C}(x) &= \{y \in \{0, 1\} : s(x, y) \le \hat{q}\}\\
+&= \{y \in \{0, 1\} : p_y(x) \ge 1 - \hat{q}\}.
+\end{split}
 \end{equation}
-Under source exchangeability, $\Pr[Y \in \mathcal{C}(X)] \ge 1 - \alpha$. A case is \emph{accepted} when $|\mathcal{C}(x)|=1$ (decisive singleton with point prediction $\hat{y} = \arg\max_y p_y(x)$), and \emph{referred/abstained} when $|\mathcal{C}(x)| \in \{0, 2\}$. Mondrian conformal calibration computes $\hat{q}_g$ independently for biological sex $g \in \{\mathrm{Male}, \mathrm{Female}\}$.
+Under source exchangeability, $\Pr[Y \in \mathcal{C}(X)] \ge 1 - \alpha$. We \emph{accept} a case when $|\mathcal{C}(x)|=1$ (a single label, with point prediction $\hat{y} = \arg\max_y p_y(x)$) and \emph{refer or abstain} when $|\mathcal{C}(x)| \in \{0, 2\}$. For Mondrian conformal calibration, $\hat{q}_g$ is computed separately for each biological sex $g \in \{\mathrm{Male}, \mathrm{Female}\}$.
 
-\textbf{Mathematical upper bound on conformal coverage.} For binary classification on $N$ evaluation patients, prediction sets satisfy $|\mathcal{C}(x_i)|\in\{0,1,2\}$. Let $N_0 = |\{i : |\mathcal{C}(x_i)|=0\}|$ denote empty sets, $N_1 = |\{i : |\mathcal{C}(x_i)|=1\}|$ singleton sets (accepted predictions; $r_{\mathrm{acc}}=N_1/N$), and $N_2 = |\{i : |\mathcal{C}(x_i)|=2\}|$ uncertain pair sets ($\mathcal{C}(x_i)=\{0,1\}$), with $N=N_0+N_1+N_2$. Accepted patients achieve accuracy $\mathrm{Acc}_{\mathrm{acc}} = N_{1,\mathrm{corr}}/N_1$. Crucially, for every incorrectly predicted accepted patient, $\mathcal{C}(x_i)=\{1-y_i\}$, so the true label $y_i$ is strictly absent. Empty sets likewise contain no labels. Therefore, true label coverage $y_i\in\mathcal{C}(x_i)$ is satisfied only by correct singletons and pair sets: $N_{\mathrm{cov}} = N_{1,\mathrm{corr}} + N_2 = (N_1 - N_{1,\mathrm{err}}) + (N - N_0 - N_1) = N - N_0 - N_{1,\mathrm{err}}$. Dividing by $N$ yields the exact coverage identity:
+\textbf{Mathematical upper bound on conformal coverage.} In binary classification on $N$ evaluation patients, every prediction set has size 0, 1 or 2, so $|\mathcal{C}(x_i)|\in\{0,1,2\}$. Write $N_0 = |\{i : |\mathcal{C}(x_i)|=0\}|$ for the number of empty sets, $N_1 = |\{i : |\mathcal{C}(x_i)|=1\}|$ for singleton sets (the accepted predictions, with $r_{\mathrm{acc}}=N_1/N$), and $N_2 = |\{i : |\mathcal{C}(x_i)|=2\}|$ for the uncertain pair sets ($\mathcal{C}(x_i)=\{0,1\}$), so $N=N_0+N_1+N_2$. The accepted patients have accuracy $\mathrm{Acc}_{\mathrm{acc}} = N_{1,\mathrm{corr}}/N_1$. When an accepted prediction is wrong, the set is $\mathcal{C}(x_i)=\{1-y_i\}$ and so does not contain the true label $y_i$. Empty sets contain no label either. The true label $y_i\in\mathcal{C}(x_i)$ is therefore covered only for correct singletons and for pair sets, giving $N_{\mathrm{cov}} = N_{1,\mathrm{corr}} + N_2 = (N_1 - N_{1,\mathrm{err}}) + (N - N_0 - N_1) = N - N_0 - N_{1,\mathrm{err}}$. Dividing by $N$ gives an exact identity for coverage:
 \begin{equation}
-\mathrm{Coverage} = \frac{N_{\mathrm{cov}}}{N} = 1 - \frac{N_0}{N} - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}}) \le 1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}}),
+\begin{split}
+\mathrm{Coverage} &= \frac{N_{\mathrm{cov}}}{N} = 1 - \frac{N_0}{N} - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})\\
+&\le 1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}}),
+\end{split}
 \label{eq:conformal_bound}
 \end{equation}
-with equality if and only if no empty prediction sets occur ($N_0=0$). Any empirical coverage value that exceeds $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$ violates this identity and is mathematically inconsistent. In leave-one-cohort-out use, source calibration violates exchangeability ($P_{\mathrm{source}}\neq P_{\mathrm{target}}$); we measure the resulting coverage drop in Section~\ref{sec:conformal}.
+with equality exactly when there are no empty prediction sets ($N_0=0$). An empirical coverage above $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$ would contradict this identity and so cannot be right. In leave-one-cohort-out use, calibrating on the source breaks exchangeability ($P_{\mathrm{source}}\neq P_{\mathrm{target}}$), and Section~\ref{sec:conformal} measures how far coverage drops as a result.
 
 \subsection{Schema-aware federated averaging}
-In the federated simulation each hospital node $h$ observes a feature subset $\mathcal{F}_h$. Parameters shared across features (transformer blocks, \texttt{[CLS]}, heads) are averaged over all nodes, weighted by local sample size $n_h$:
+In the federated simulation each hospital node $h$ sees only a subset $\mathcal{F}_h$ of the features. The parameters shared across features (transformer blocks, \texttt{[CLS]}, heads) are averaged over all nodes, weighted by the local sample size $n_h$:
 \begin{equation}
 \theta_{\mathrm{shared}}\leftarrow\sum_h \frac{n_h}{\sum_{h'}n_{h'}}\,\theta^{(h)}_{\mathrm{shared}}.
 \end{equation}
@@ -283,7 +319,7 @@ Feature-specific parameters $\theta_j=(e_{\mathrm{name}}(f_j),w_j,b_j)$ are aver
 \begin{equation}
 \theta_j\leftarrow\sum_{h\in H_j}\frac{n_h}{\sum_{h'\in H_j}n_{h'}}\,\theta^{(h)}_j.
 \end{equation}
-This prevents embeddings of a feature from being diluted by nodes that never see it.
+This way a feature's embeddings are not watered down by nodes that never observe it.
 
 \subsection{Evaluation metrics}
 Calibration is summarized by the expected calibration error over $B$ equal-width probability bins,
@@ -298,29 +334,29 @@ compared with the treat-all strategy $\mathrm{NB}_{\mathrm{all}}=\pi-(1-\pi)\,p_
 
 %=====================================================================
 \section{Experimental Protocol}\label{sec:protocol}
-\textbf{Data partitioning and splits.} Each experimental track adheres to a prespecified partitioning protocol:
+\textbf{Data partitioning and splits.} Each experimental track follows its own split protocol, fixed in advance.
 \begin{enumerate}
-\item \emph{Pooled multi-model benchmark ($N=74{,}013$):} Stratified five-fold cross-validation across all non-overlapping records (excluding Statlog). Within each fold, 80\% ($N=59{,}210$) serves as training data and 20\% ($N=14{,}803$) as the test set. Models are evaluated with raw features alone and with four engineered meta-features (\texttt{bmi}, \texttt{pulse\_pressure}, \texttt{chol\_tier}, \texttt{gluc\_tier}).
-\item \emph{Literature 70/15/15 reproduction:} Stratified partition into 70\% training, 15\% validation (for early stopping checkpoint selection), and 15\% held-out test evaluation on the leaked pool (71{,}025 raw $\rightarrow$ 69{,}692 clean), deduplicated pool (70{,}302 raw $\rightarrow$ 68{,}969 clean), and Sulianova alone (68{,}568 full QC / 68{,}667 minimal filter).
-\item \emph{Leave-one-cohort-out (LOCO) cross-hospital transfer:} In each of five folds, one entire clinical cohort is held out as the unseen target test cohort ($N_{\mathrm{test}}$: Hungarian=293, VA+Switzerland=308, Cleveland=303, Z-Alizadeh Sani=303, Framingham=4{,}238). The remaining $K-1$ cohorts form the source pool ($N_{\mathrm{source}}\approx 69{,}775$--$73{,}720$), strictly partitioned into a 70\% source training split ($D_{\mathrm{train}}$ for optimizing network parameters $\theta$), a 15\% source validation split ($D_{\mathrm{val}}$ for early stopping and temperature scaling $T^*$), and a disjoint 15\% calibration split ($D_{\mathrm{cal}}$ for finite-sample non-conformity threshold calibration $\hat{q}$). Zero-shot evaluation is executed on 100\% of target records. For target recalibration, a 20\% stratified local slice ($D_{\mathrm{tgt,cal}}$) re-estimates non-conformity quantiles, evaluated on the remaining 80\% target records.
-\item \emph{Missingness stress test and architectural ablation:} Stratified 70\% training, 15\% validation, and 15\% held-out test multi-cohort partition ($N=11{,}102$ test patients, Statlog excluded).
+\item \emph{Pooled multi-model benchmark ($N=74{,}013$):} stratified five-fold cross-validation on all non-overlapping records, with Statlog excluded. Each fold trains on 80\% ($N=59{,}210$) and tests on 20\% ($N=14{,}803$). Every model is run on raw features only and again with four engineered meta-features (\texttt{bmi}, \texttt{pulse\_pressure}, \texttt{chol\_tier}, \texttt{gluc\_tier}).
+\item \emph{Literature 70/15/15 reproduction:} a stratified split into 70\% training, 15\% validation (used to select the early-stopping checkpoint) and 15\% held-out test. It is applied to the leaked pool (71{,}025 raw $\rightarrow$ 69{,}692 clean), the deduplicated pool (70{,}302 raw $\rightarrow$ 68{,}969 clean) and Sulianova alone (68{,}568 full QC / 68{,}667 minimal filter).
+\item \emph{Leave-one-cohort-out (LOCO) cross-hospital transfer:} in each of five folds one whole cohort is held out as the unseen target ($N_{\mathrm{test}}$: Hungarian=293, VA+Switzerland=308, Cleveland=303, Z-Alizadeh Sani=303, Framingham=4{,}238). The other $K-1$ cohorts form the source pool ($N_{\mathrm{source}}\approx 69{,}775$--$73{,}720$), which is split strictly into 70\% training ($D_{\mathrm{train}}$, for fitting the network parameters $\theta$), 15\% validation ($D_{\mathrm{val}}$, for early stopping and the temperature $T^*$) and a disjoint 15\% calibration set ($D_{\mathrm{cal}}$, for calibrating the finite-sample non-conformity threshold $\hat{q}$). Zero-shot evaluation uses 100\% of the target records. For target recalibration, a stratified 20\% local slice ($D_{\mathrm{tgt,cal}}$) re-estimates the non-conformity quantiles and the remaining 80\% of the target is used for evaluation.
+\item \emph{Missingness stress test and architectural ablation:} a stratified multi-cohort split into 70\% training, 15\% validation and 15\% held-out test ($N=11{,}102$ test patients, Statlog excluded).
 \end{enumerate}
 
-\textbf{Conformal calibration and decision rule.} For temperature-scaled probability $p_y(x) = \hat{P}(Y=y \mid X=x)$, non-conformity scores are $s(x,y)=1-p_y(x)$. At nominal coverage $1-\alpha=0.90$ ($\alpha=0.10$), the calibration quantile $\hat{q}$ is computed on $n$ calibration samples as $\hat{q} = \mathrm{Quantile}(\{s(x_i,y_i)\}_{i=1}^n; \; \lceil (n+1)(1-\alpha) \rceil / n)$. The prediction set is $\mathcal{C}(x) = \{y \in \{0,1\} : s(x,y) \le \hat{q}\}$. A case is accepted when $|\mathcal{C}(x)|=1$ (decisive singleton with prediction $\hat{y}=\arg\max_y p_y(x)$), and referred/abstained when $|\mathcal{C}(x)|\in\{0,2\}$. Empirical set coverage satisfies Eq.~(\ref{eq:conformal_bound}). Mondrian conformal prediction computes $\hat{q}_g$ independently across biological sex $g\in\{\mathrm{Male},\mathrm{Female}\}$.
+\textbf{Conformal calibration and decision rule.} With the temperature-scaled probability $p_y(x) = \hat{P}(Y=y \mid X=x)$, the non-conformity score is $s(x,y)=1-p_y(x)$. For nominal coverage $1-\alpha=0.90$ ($\alpha=0.10$), the quantile $\hat{q}$ is taken over $n$ calibration samples as $\hat{q} = \mathrm{Quantile}(\{s(x_i,y_i)\}_{i=1}^n; \; \lceil (n+1)(1-\alpha) \rceil / n)$, and the prediction set is $\mathcal{C}(x) = \{y \in \{0,1\} : s(x,y) \le \hat{q}\}$. A case is accepted if $|\mathcal{C}(x)|=1$ (a single label, with prediction $\hat{y}=\arg\max_y p_y(x)$) and referred or abstained if $|\mathcal{C}(x)|\in\{0,2\}$. Empirical set coverage obeys Eq.~(\ref{eq:conformal_bound}). Under Mondrian conformal prediction, $\hat{q}_g$ is computed separately for each biological sex $g\in\{\mathrm{Male},\mathrm{Female}\}$.
 
 \textbf{Repeated seeds and variance reporting.}
 \begin{itemize}
-\item \emph{Missingness stress test (Table~\ref{tab:miss}):} To eliminate stochastic artifact from random masking, evaluations are repeated across \textbf{five independent random seeds} ($[42, 100, 2026, 777, 999]$). The same masked subsets are applied identically across all five model families (SchemaFlex, Unregularized Transformer, Native-NaN LightGBM, Native-NaN XGBoost, Median-Imputed LightGBM), reporting empirical mean $\pm$ sample standard deviation.
-\item \emph{LOCO cross-cohort matrix (Table~\ref{tab:loco}) and conformal abstention audit (Table~\ref{tab:conf}):} Evaluated across \textbf{five independent random seeds} ($[42, 100, 2026, 777, 999]$) reporting empirical mean $\pm$ sample standard deviation across all cohorts, alongside deterministic single-seed ($42$) patient-level count audits and paired DeLong tests with family-wise Holm--Bonferroni correction.
-\item \emph{Subgroup analysis:} Evaluated with 1{,}000 bootstrap resamples for 95\% confidence intervals.
+\item \emph{Missingness stress test (Table~\ref{tab:miss}):} to make sure random masking does not drive the result, we repeat everything over \textbf{five independent random seeds} ($[42, 100, 2026, 777, 999]$). All five model families (SchemaFlex, Unregularized Transformer, Native-NaN LightGBM, Native-NaN XGBoost, Median-Imputed LightGBM) get exactly the same masked subsets. We report the mean $\pm$ sample standard deviation.
+\item \emph{LOCO cross-cohort matrix (Table~\ref{tab:loco}) and conformal abstention audit (Table~\ref{tab:conf}):} run over \textbf{five independent random seeds} ($[42, 100, 2026, 777, 999]$), with the mean $\pm$ sample standard deviation reported for every cohort. We add deterministic single-seed ($42$) patient-level count audits and paired DeLong tests with family-wise Holm--Bonferroni correction.
+\item \emph{Subgroup analysis:} 95\% confidence intervals come from 1{,}000 bootstrap resamples.
 \end{itemize}
 
-\textbf{Model architecture and training optimization.} \sfn{} employs 2 transformer layers, 4 attention heads, token embedding dimension $d=64$, feedforward dimension 128, and dropout $0.10$. Training applies AdamW ($\beta_1=0.9, \beta_2=0.999$, weight decay $10^{-4}$), initial learning rate $1.5\times 10^{-3}$, cosine annealing decay down to $10^{-5}$ over 16 epochs, batch size 256, and gradient norm clipping at $1.0$. Loss regularization weights are fixed at $\lambda_{\mathrm{concept}}=0.10$ and $\lambda_{\mathrm{mono}}=1.20$. Baseline tree models (LightGBM, XGBoost, CatBoost) are tuned with early stopping on validation AUROC. Prospective multi-site clinical validation remains recommended.
+\textbf{Model architecture and training optimization.} \sfn{} has 2 transformer layers, 4 attention heads, token embedding dimension $d=64$, feedforward dimension 128 and dropout $0.10$. We train with AdamW ($\beta_1=0.9, \beta_2=0.999$, weight decay $10^{-4}$), an initial learning rate of $1.5\times 10^{-3}$ annealed with a cosine schedule to $10^{-5}$ over 16 epochs, batch size 256 and gradient-norm clipping at $1.0$. The loss weights are fixed at $\lambda_{\mathrm{concept}}=0.10$ and $\lambda_{\mathrm{mono}}=1.20$. The tree baselines (LightGBM, XGBoost, CatBoost) are tuned with early stopping on validation AUROC. Prospective multi-site clinical validation is still needed.
 
 %=====================================================================
 \section{Results}\label{sec:results}
 \subsection{Pooled benchmark}\label{sec:pooled}
-On pooled stratified five-fold cross-validation (74{,}013 patients), LightGBM with raw plus engineered features reaches AUROC 0.8249 and accuracy 75.98\% (75.39\% with raw features only). XGBoost, random forest and CatBoost lie within 0.004 AUROC, MLP and TabNet reach about 0.811, and logistic regression 0.768 (Table~\ref{tab:pooled}). Among the models tested these values form an empirical ceiling for this pool, and they are far below 90\%. Engineered features help every model by between $+0.0014$ and $+0.0124$ AUROC.
+In pooled stratified five-fold cross-validation (74{,}013 patients), LightGBM with raw plus engineered features reaches an AUROC of 0.8249 and 75.98\% accuracy (75.39\% on raw features alone). XGBoost, random forest and CatBoost stay within 0.004 AUROC of it, MLP and TabNet get about 0.811, and logistic regression 0.768 (Table~\ref{tab:pooled}). For the models we tried, these numbers look like a ceiling on this pool, and they sit well below 90\%. The engineered features help every model, by $+0.0014$ to $+0.0124$ AUROC.
 
 \begin{table}[t]
 \caption{Pooled 5-fold benchmark: AUROC with raw features (A) and with engineered meta-features (B); accuracy for B.}
@@ -342,9 +378,9 @@ TabNet & 0.8078 & 0.8105 & $+0.0027$ & 74.87\\
 \end{table}
 
 \subsection{Zero-shot cross-cohort transfer}
-Table~\ref{tab:loco} and Fig.~\ref{fig:loco} show LOCO transfer evaluated across five repeated seeds ($[42, 100, 2026, 777, 999]$). Inner-join models are weak (mean AUROC $0.6154 \pm 0.0054$ for LightGBM and 0.6445 for the re-implemented \htn{}) because the shared columns exclude chest-pain type, exercise ECG variables and vessel counts. Retaining the union schema is the decisive change: NaN-aware LightGBM reaches $0.7405 \pm 0.0094$. \sfn{} reaches $0.7635 \pm 0.0077$ (seed-42: 0.7662), a mean gain of $+0.0230$ over that stronger baseline, driven by Z-Alizadeh ($+0.0788$) and Hungarian ($+0.0199$); it is slightly lower on VA+Switzerland ($-0.0032$) and comparable on Cleveland ($+0.0092$) and Framingham ($+0.0103$).
+Table~\ref{tab:loco} and Fig.~\ref{fig:loco} give the LOCO transfer results over five repeated seeds ($[42, 100, 2026, 777, 999]$). The inner-join models do poorly (mean AUROC $0.6154 \pm 0.0054$ for LightGBM, 0.6445 for the re-implemented \htn{}) because the shared columns contain no chest-pain type, exercise ECG variables or vessel counts. What changes the picture is keeping the union schema: NaN-aware LightGBM then reaches $0.7405 \pm 0.0094$. \sfn{} gets $0.7635 \pm 0.0077$ (seed-42: 0.7662), a mean gain of $+0.0230$ over that stronger baseline. Most of it comes from Z-Alizadeh ($+0.0788$) and Hungarian ($+0.0199$). On VA+Switzerland \sfn{} is slightly lower ($-0.0032$), and on Cleveland ($+0.0092$) and Framingham ($+0.0103$) the two are about level.
 
-Table~\ref{tab:delong} gives paired DeLong tests. Against the re-implemented inner-join \htn{}, \sfn{} is significantly better on Hungarian ($p<10^{-10}$), VA+Switzerland ($p{=}5.6\times10^{-4}$) and Cleveland ($p{=}2.1\times10^{-6}$), and not significantly different on Z-Alizadeh ($p{=}0.84$) or Framingham ($p{=}0.71$). Against the union-schema LightGBM, the most informative comparison, the Z-Alizadeh gain is nominally significant (raw $p{=}0.037$) but no cohort survives Holm correction (adjusted $p\ge 0.18$). We did not detect a statistically significant AUROC difference between \sfn{} and union-schema LightGBM on any individual cohort after Holm correction. These results indicate that superiority was not established under the specified tests, but they do not prove statistical equivalence. Given the modest sample sizes ($N\approx 300$) of the tertiary cardiology cohorts, statistical power is limited to detect small margins ($\Delta\approx 0.01$--$0.02$); establishing practical equivalence requires prespecified equivalence margins and formal two one-sided testing (TOST) on larger cohorts.
+Table~\ref{tab:delong} lists the paired DeLong tests. Compared with the re-implemented inner-join \htn{}, \sfn{} is significantly better on Hungarian ($p<10^{-10}$), VA+Switzerland ($p{=}5.6\times10^{-4}$) and Cleveland ($p{=}2.1\times10^{-6}$), and not significantly different on Z-Alizadeh ($p{=}0.84$) or Framingham ($p{=}0.71$). The comparison that tells us more is the one with union-schema LightGBM. Here the Z-Alizadeh gain is nominally significant (raw $p{=}0.037$), but once Holm correction is applied no cohort survives (adjusted $p\ge 0.18$). After correction we found no cohort-level AUROC difference between \sfn{} and union-schema LightGBM that reaches significance. Superiority is therefore not established by these tests, and the tests do not prove equivalence either. The tertiary cardiology cohorts have only about 300 patients ($N\approx 300$), so the power to detect small margins ($\Delta\approx 0.01$--$0.02$) is limited. To show practical equivalence one would need prespecified equivalence margins and a formal two one-sided test (TOST) on larger cohorts.
 
 \begin{table*}[t]
 \caption{Zero-shot LOCO AUROC across 5 repeated seeds (mean $\pm$ std; seed-42 point estimates in parentheses). Hybrid = re-implemented \htn{} with inner join; Union LGBM = NaN-aware LightGBM on the union schema. The mean row is the unweighted mean of the five per-cohort values. Bold marks the highest mean AUROC per row.}
@@ -403,8 +439,8 @@ Framingham & 4{,}238 & $+0.0083$ & 0.722 & 0.470 & 1.000 & n.s. & 0.71 (n.s.)\\
 \end{figure}
 
 \subsection{Ablation and monotonicity}\label{sec:ablation}
-Table~\ref{tab:abl} isolates each component on the held-out 15\% multi-cohort partition. We highlight an essential methodological distinction: Variant 1 (inner join, AUROC 0.6342) restricts input features to the 5 shared features, whereas Variant 2 (+ schema tokenizer, AUROC 0.8560) expands access to all 14 union features. To isolate feature access from model architecture, we evaluated a NaN-aware LightGBM on genuinely identical train, validation, and test partitions using equivalent feature preprocessing, which achieved AUROC 0.8510 (vs.\ 0.6280 on the inner join). Thus, schema retention (preserving specialized diagnostic variables) accounts for the vast majority ($\approx$+0.223 AUROC) of the observed gain, while the schema-flexible tokenizer provides an incremental $+0.0050$ AUROC alongside the structural capability to ingest dynamic subsets without static imputation. Given the modest incremental margin (+0.0050), this does not establish general architectural superiority of tabular transformers over gradient-boosted trees.
-Feature dropout adds $+0.004$ AUROC and lowers monotonicity violations from 19.2\% to 4.2\%. The concept head changes AUROC by $+0.0007$ and raises violations to 13.0\%, confirming its value is interpretive rather than predictive. Finally, in Variant 5, the positive-constrained skip path and autograd gradient penalty ($\lambda_2=1.20$) independently regularize input directional gradients, suppressing counterfactual monotonicity violation rates to 0.26\% on synthetic $+0.5$~SD perturbations of SBP and cholesterol without compromising discriminative capacity (0.8652 AUROC). In contrast, post-hoc temperature scaling operates strictly on output logits to minimize probability calibration error (ECE 0.0572) and has zero effect on AUROC. These two mechanisms address orthogonal clinical objectives (gradient-level physiological plausibility vs.\ calibrated confidence) and should not be conflated as a single architectural intervention. These are single-run figures without confidence intervals, and the evaluation split differs from that of Table~\ref{tab:loco}.
+Table~\ref{tab:abl} isolates each component on the held-out 15\% multi-cohort partition. One distinction matters. Variant 1 (inner join, AUROC 0.6342) works with only the 5 shared features, while Variant 2 (+ schema tokenizer, AUROC 0.8560) can use all 14 union features. To separate feature access from architecture, we trained a NaN-aware LightGBM on identical train, validation and test partitions with equivalent preprocessing, and it reached AUROC 0.8510 (vs.\ 0.6280 on the inner join). Most of the gain ($\approx$+0.223 AUROC) therefore comes from retaining the schema, that is, from keeping the specialized diagnostic variables. The schema-flexible tokenizer adds a further $+0.0050$ AUROC and the ability to take varying subsets of features without static imputation. A margin that small does not show that tabular transformers are generally better than gradient-boosted trees.
+Feature dropout adds $+0.004$ AUROC and cuts monotonicity violations from 19.2\% to 4.2\%. The concept head changes AUROC by $+0.0007$ and raises violations to 13.0\%, so it is useful for interpretation rather than prediction. In Variant 5 the positive-constrained skip path and the autograd gradient penalty ($\lambda_2=1.20$) each regularize the input directional gradients. Together they lower the counterfactual monotonicity violation rate to 0.26\% on synthetic $+0.5$~SD perturbations of SBP and cholesterol, with no loss of discriminative power (0.8652 AUROC). Post-hoc temperature scaling works differently: it acts only on the output logits, reduces calibration error (ECE 0.0572) and leaves AUROC unchanged. The two serve different goals (physiological plausibility of the gradients vs.\ calibrated confidence) and should not be lumped together. These figures come from single runs without confidence intervals, and the evaluation split differs from that of Table~\ref{tab:loco}.
 
 \begin{table}[t]
 \caption{Component ablation on the held-out 15\% multi-cohort partition. Viol.\ = counterfactual monotonicity violations (\%).}
@@ -424,15 +460,16 @@ Variant & AUROC & Acc. & ECE & Viol.\\
 \end{table}
 
 \subsection{Conformal abstention and cohort shift}\label{sec:conformal}
-At $\alpha=0.10$ the model accepts 46.5--77.7\% of patients across 5 seeds depending on the cohort (Table~\ref{tab:conf}). On accepted cases AUROC rises by 0.03--0.09 and accuracy by 5--12 points on four tertiary cardiology cohorts; on Framingham accuracy remains flat (51.3\% to 53.7\%) due to outcome construct divergence. The accepted fraction is a \emph{selective-prediction rate}, not conformal coverage.
+At $\alpha=0.10$ the model accepts between 46.5\% and 77.7\% of patients over 5 seeds, depending on the cohort (Table~\ref{tab:conf}). On the accepted cases AUROC goes up by 0.03--0.09 and accuracy by 5--12 points in the four tertiary cardiology cohorts. On Framingham accuracy hardly moves (51.3\% to 53.7\%), again because of outcome construct divergence. The accepted fraction is a \emph{selective-prediction rate} and not conformal coverage.
 
-Table~\ref{tab:conf} provides the multi-seed LOCO conformal evaluation (mean $\pm$ std across 5 repeated seeds) and the deterministic seed-42 patient-level count audit reconciling accepted accuracy and empirical set coverage under Eq.~(\ref{eq:conformal_bound}). Crucially, in all 25 experimental runs (5 seeds $\times$ 5 cohorts), no empty prediction sets occur ($N_0=0$); thus, the empirical set coverage matches the theoretical upper bound $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$ identically. For instance, on the seed-42 audit for Hungarian ($N=293$), 213 singletons ($N_{1,\mathrm{corr}}=190$, $N_{1,\mathrm{err}}=23$, 89.2\% accuracy) and 80 pairs ($N_2=80, N_0=0$) yield $N_{\mathrm{cov}}=270$, giving empirical coverage $270/293 = 92.15\%$, identically matching $1 - (213/293)\times(1-0.8920) = 92.15\%$. On Cleveland ($N=303$), 212 singletons (177 correct, 35 errors) and 91 pairs yield $N_{\mathrm{cov}}=268$, giving empirical coverage $268/303 = 88.45\%$, matching the theoretical ceiling $88.45\%$. On Framingham ($N=4{,}238$), accepted accuracy is 49.19\% across 2{,}968 singletons (1,460 correct, 1,508 errors); with 1{,}270 pairs and $N_0=0$, empirical coverage is $2{,}730/4{,}238=64.42\%$, identically bounded by $64.42\%$. Across 5 seeds, source coverage averages 70.7\% on Framingham and 87.7--88.7\% on tertiary cohorts (unweighted mean $84.6\% \pm 2.2\%$), demonstrating that cross-cohort shift degrades marginal coverage below nominal 90\%. Target recalibration on a 20\% local slice restores coverage to $89.7$--$95.1\%$ ($91.9\% \pm 2.6\%$ overall) by adapting non-conformity quantiles to the target feature distribution.
+Table~\ref{tab:conf} gives the multi-seed LOCO conformal results (mean $\pm$ std over 5 seeds) next to a deterministic seed-42 patient-level count audit, which reconciles accepted accuracy and empirical set coverage with Eq.~(\ref{eq:conformal_bound}). Across all 25 runs (5 seeds $\times$ 5 cohorts) no empty prediction set occurred ($N_0=0$), so empirical set coverage coincides with the upper bound $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$. Take the seed-42 audit on Hungarian ($N=293$): 213 singletons ($N_{1,\mathrm{corr}}=190$, $N_{1,\mathrm{err}}=23$, 89.2\% accuracy) and 80 pairs ($N_2=80, N_0=0$) give $N_{\mathrm{cov}}=270$, an empirical coverage of $270/293 = 92.15\%$, which equals $1 - (213/293)\times(1-0.8920) = 92.15\%$. On Cleveland ($N=303$), 212 singletons (177 correct, 35 errors) and 91 pairs give $N_{\mathrm{cov}}=268$ and coverage of $268/303 = 88.45\%$, the same as the ceiling of $88.45\%$. On Framingham ($N=4{,}238$) the accepted accuracy is 49.19\% over 2{,}968 singletons (1,460 correct, 1,508 errors); with 1{,}270 pairs and $N_0=0$ the empirical coverage is $2{,}730/4{,}238=64.42\%$, again equal to the bound of $64.42\%$. Averaged over 5 seeds, source coverage is 70.7\% on Framingham and 87.7--88.7\% on the tertiary cohorts (unweighted mean $84.6\% \pm 2.2\%$). A shift between cohorts therefore pulls marginal coverage below the nominal 90\%. Recalibrating on a 20\% local slice of the target brings coverage back to $89.7$--$95.1\%$ ($91.9\% \pm 2.6\%$ overall), since the non-conformity quantiles are then fitted to the target feature distribution.
 
 \begin{table*}[t]
 \caption{Multi-seed LOCO conformal abstention audit at $\alpha=0.10$ across 5 repeated seeds (mean $\pm$ std). Bracketed integer counts indicate the deterministic seed-42 patient audit ($N = N_1 + N_2 + N_0$, $N_0=0$). Max Bound = $1 - r_{\mathrm{acc}}(1 - \mathrm{Acc}_{\mathrm{acc}})$ from Eq.~(\ref{eq:conformal_bound}); Src.\ Cov.\ = $N_{\mathrm{cov}}/N$; Tgt.\ Cov.\ = coverage after 20\% target recalibration.}
 \label{tab:conf}
 \centering\footnotesize
 \setlength{\tabcolsep}{3.5pt}
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{%
 \begin{tabular}{lrcccccc}
 \toprule
 Held-out cohort & Test $N$ & Acceptance Rate $r_{\mathrm{acc}}$ [$N_1$] & Accepted Acc.\ (\%) & Src.\ Set Cov.\ & Max Bound & Tgt.\ Set Cov.\ & AUROC (All $\rightarrow$ Acc.)\\
@@ -445,17 +482,18 @@ Framingham & 4{,}238 & 62.9\% $\pm$ 4.5\% [2968 (70.0\%)] & 53.7\% $\pm$ 5.9\% [
 \midrule
 Unweighted Mean & --- & 65.1\% $\pm$ 4.5\% [65.3\%] & 75.6\% $\pm$ 2.7\% [74.9\%] & 84.6\% $\pm$ 2.2\% [83.7\%] & 84.6\% $\pm$ 2.2\% [83.7\%] & 91.9\% $\pm$ 2.6\% & .764 $\rightarrow$ .798 $\pm$ .015\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table*}
 
 \subsection{Robustness to missing data}
-Table~\ref{tab:miss} and Fig.~\ref{fig:miss} show AUROC across 0--50\% test-time feature missingness on the held-out 15\% multi-cohort partition, evaluated on identical feature dropout masks across all models and averaged over 5 repeated random seeds ($\pm$ standard deviation). When trained on the complete 14-feature union schema, tree baselines at 0\% missingness achieve $\approx$0.811 AUROC (Native LightGBM 0.8107, Native XGBoost 0.8110, Median LightGBM 0.8105), fully consistent with the pooled cross-validation band of Table~\ref{tab:pooled}. Under test-time feature dropout, \sfn{} degrades from 0.8520 to 0.7123 $\pm$ 0.0051 at 50\% missingness, maintaining an advantage over split-routing native-NaN trees (+0.0279 over LightGBM, +0.0409 over XGBoost). However, simple median-imputed LightGBM retains 0.7262 $\pm$ 0.0019 AUROC, outperforming both native-NaN trees and the unregularized transformer. This empirical finding provides a crucial scientific qualification: token dropout equips transformers with structural adaptability to unobserved inputs, but simple mean or median imputation in tree ensembles remains remarkably robust under random missingness. Comparative robustness claims must therefore be labeled strictly provisional and task-dependent rather than indicative of general neural superiority.
+Table~\ref{tab:miss} and Fig.~\ref{fig:miss} show AUROC when 0--50\% of the features are missing at test time, on the held-out 15\% multi-cohort partition. Every model sees the same feature dropout masks, and we average over 5 random seeds ($\pm$ standard deviation). Trained on the full 14-feature union schema, the tree baselines reach $\approx$0.811 AUROC with nothing missing (Native LightGBM 0.8107, Native XGBoost 0.8110, Median LightGBM 0.8105), in line with the pooled cross-validation band of Table~\ref{tab:pooled}. As features are removed, \sfn{} drops from 0.8520 to 0.7123 $\pm$ 0.0051 at 50\% missingness. It stays ahead of the split-routing native-NaN trees (+0.0279 over LightGBM, +0.0409 over XGBoost). Median-imputed LightGBM, however, keeps 0.7262 $\pm$ 0.0019 AUROC and beats both native-NaN trees and the unregularized transformer. This tempers the result. Token dropout gives a transformer a structural way to cope with unobserved inputs, but plain mean or median imputation in tree ensembles turns out to be very robust under random missingness. We therefore read the robustness comparison as provisional and dependent on the task, and not as a sign that neural models are better in general.
 
 \begin{table}[t]
 \caption{AUROC under test-time missing features across 5 repeated masking seeds (mean $\pm$ std). Native = native missing-value routing; Med.\ = median imputation; Unreg.\ = unregularized transformer.}
 \label{tab:miss}
 \centering\footnotesize
 \setlength{\tabcolsep}{2.5pt}
+\resizebox{\ifdim\width>\columnwidth\columnwidth\else\width\fi}{!}{%
 \begin{tabular}{rccccc}
 \toprule
 Missing & \sfn{} & Unreg. & Native LGBM & Native XGB & Med.\ LGBM\\
@@ -467,7 +505,7 @@ Missing & \sfn{} & Unreg. & Native LGBM & Native XGB & Med.\ LGBM\\
 40\% & .716 $\pm$ .005 & .696 $\pm$ .005 & .708 $\pm$ .005 & .700 $\pm$ .002 & .746 $\pm$ .003\\
 50\% & .712 $\pm$ .005 & .699 $\pm$ .005 & .684 $\pm$ .007 & .671 $\pm$ .004 & .726 $\pm$ .002\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \begin{figure}[t]
@@ -490,67 +528,68 @@ Missing & \sfn{} & Unreg. & Native LGBM & Native XGB & Med.\ LGBM\\
 \end{figure}
 
 \subsection{Fairness, federation and clinical utility}
-\textbf{Subgroups.} On the 270-patient overlap cohort, male and female false-positive rates are 0.398 and 0.119 and sensitivities 0.86 and 0.80; the age $>65$ group has only 30 patients. In a separate 298-patient evaluation, marginal conformal calibration gave FPRs of 0.038 (male) and 0.186 (female); Mondrian calibration moved them to 0.173 and 0.246. It therefore \emph{halved} the inter-sex FPR gap, from 0.149 to 0.072 (a 51\% reduction), and lowered male FNR from 0.395 to 0.250, but it did not eliminate the gap and it raised the FPR of both groups. Subgroup samples are too small for confidence intervals to support firm conclusions.
+\textbf{Subgroups.} In the 270-patient overlap cohort the false-positive rates are 0.398 for men and 0.119 for women, with sensitivities of 0.86 and 0.80; the age $>65$ group has only 30 patients. In a separate 298-patient evaluation, marginal conformal calibration gave FPRs of 0.038 (male) and 0.186 (female), and Mondrian calibration changed them to 0.173 and 0.246. It \emph{halved} the gap in FPR between the sexes, from 0.149 to 0.072 (a 51\% reduction), and lowered the male FNR from 0.395 to 0.250. The gap did not disappear, however, and the FPR rose in both groups. These subgroups are too small for the confidence intervals to support firm conclusions.
 
-\textbf{Federated simulation.} In a four-node simulation, schema-aware averaging (feature-specific parameters averaged only across nodes that observe the feature) reaches 0.767 AUROC after 10 rounds, versus 0.746 for isolated models and 0.875 for centralized training. Federation closes 16.3\% of the gap between isolated and centralized training. It shares only model weights, and no formal privacy mechanism (differential privacy, secure aggregation) was applied, so ``no row sharing'' should not be read as a privacy guarantee.
+\textbf{Federated simulation.} We simulated four nodes. Schema-aware averaging, where feature-specific parameters are averaged only across the nodes that observe the feature, reaches 0.767 AUROC after 10 rounds, against 0.746 for isolated models and 0.875 for centralized training. Federation closes 16.3\% of the gap between isolated and centralized training. Only model weights are shared, and no formal privacy mechanism (differential privacy, secure aggregation) was used, so ``no row sharing'' should not be taken as a privacy guarantee.
 
-\textbf{Decision curves.} On the same 270-patient cohort (prevalence 44.4\%), net benefit exceeds treat-all at thresholds from 0.10 to 0.30, e.g.\ 0.346 vs.\ 0.306 at 0.20, equivalent to about four additional net true-positive decisions per 100 patients. This holds for one high-prevalence single-center cohort and should not be generalized.
+\textbf{Decision curves.} On the same 270-patient cohort (prevalence 44.4\%), net benefit is above treat-all for thresholds from 0.10 to 0.30, for example 0.346 vs.\ 0.306 at 0.20, which corresponds to about four extra net true-positive decisions per 100 patients. This is one high-prevalence, single-center cohort, so the result should not be generalized.
 
 %=====================================================================
 \section{Discussion and Limitations}\label{sec:discussion}
-\textbf{What the evidence supports.} Duplicate contamination and cross-cohort record overlap are real and widespread in popular files, invalidating random-split benchmarks. Inner-join harmonization severely penalizes cross-cohort transfer by discarding non-overlapping clinical measurements. A union-schema representation recovers most of this loss, whether through masked transformers or NaN-aware trees; the transformer adds a modest mean gain ($+0.023$ AUROC) that is not statistically significant per cohort after Holm correction, provides structural robustness against test-time missingness, and enables conformal abstention, but does not achieve uniform superiority.
+\textbf{What the evidence supports.} Duplicates and cross-cohort record overlap are real and common in popular files, and they make random-split benchmarks unreliable. Inner-join harmonization badly hurts cross-cohort transfer because the clinical measurements that are not shared get thrown away. Keeping the union schema recovers most of that loss, whether with masked transformers or with NaN-aware trees. The transformer adds a modest mean gain ($+0.023$ AUROC) that is not statistically significant for any single cohort after Holm correction. It also copes structurally with missing inputs at test time and allows conformal abstention, but it is not uniformly better.
 
-\textbf{What it does not support.} We do not show that duplicate contamination explains the published 90.1\% in~\cite{mahmud2026}; both fixed-prediction bounds and controlled retraining indicate that duplicates alter accuracy by only $\sim$0.30 percentage points, leaving the origin of that figure undetermined. We do not claim an architecture-faithful refutation of the proprietary transformer in~\cite{mahmud2026}, nor do we claim statistical equivalence to union-schema LightGBM.
+\textbf{What it does not support.} We have not shown that duplicate contamination explains the 90.1\% published in~\cite{mahmud2026}. The fixed-prediction bound and the controlled retraining both say that duplicates move accuracy by only $\sim$0.30 percentage points, so where that figure comes from is still unknown. We do not claim to have refuted, architecture for architecture, the proprietary transformer in~\cite{mahmud2026}, and we do not claim equivalence to union-schema LightGBM.
 
 \subsection{Outcome-construct divergence}
-A central validity limitation in multi-cohort cardiovascular benchmarks is outcome construct divergence. The merged binary label conflates three clinically and temporally distinct targets:
+A central validity problem in multi-cohort cardiovascular benchmarks is that the outcome means different things in different cohorts. The merged binary label combines three targets that differ clinically and in time:
 \begin{enumerate}
 \item \emph{Prevalent cardiovascular disease at examination} (Sulianova CVD, $N{=}68{,}568$): cross-sectional clinical history and screening findings.
 \item \emph{Angiographic coronary artery disease} (UCI cohorts, Z-Alizadeh Sani, $N{=}1{,}207$): acute objective visualization of $\ge 50\%$ luminal stenosis on cardiac catheterization.
 \item \emph{Incident coronary heart disease events during longitudinal follow-up} (Framingham Study, $N{=}4{,}238$): 10-year prospective event occurrence~\cite{dawber1951}.
 \end{enumerate}
-These targets share a binary encoding but fundamentally represent different clinical prediction problems: acute anatomical stenosis detection versus 10-year prospective survival prognosis. This construct divergence directly explains the flat transfer performance on Framingham (AUROC $\approx 0.670$--$0.680$ across all models) and the collapse in conformal set coverage to 70.7\% $\pm$ 5.3\% (seed-42: 64.4\%), where singleton accuracy is only 53.7\% $\pm$ 5.9\% (seed-42: 49.2\%). Multi-cohort benchmarks should avoid pooling distinct clinical targets or employ construct-specific prediction heads.
+All three are stored as a binary label, but they are different prediction problems: detecting acute anatomical stenosis on one side, and prognosis over 10 years of prospective follow-up on the other. This divergence explains why transfer to Framingham stays flat (AUROC $\approx 0.670$--$0.680$ for all models) and why conformal set coverage collapses to 70.7\% $\pm$ 5.3\% (seed-42: 64.4\%), with singleton accuracy of only 53.7\% $\pm$ 5.9\% (seed-42: 49.2\%). Benchmarks that merge cohorts should not pool unlike clinical targets, or else should use prediction heads specific to each construct.
 
 \textbf{Limitations.}
 \begin{enumerate}
-\item \emph{Outcome construct heterogeneity}, as analyzed above; conflating cross-sectional examination findings with 10-year incident events restricts clinical validity of pooled predictions.
-\item \emph{Pool composition imbalance.} Sulianova contributes 92.6\% of records, meaning learning of specialized cardiology variables depends on a small minority of patients.
-\item \emph{Conformal validity under cohort shift.} Source calibration yields coverage of 70.7\% on Framingham and 87.7--88.7\% on tertiary cohorts (84.6\% $\pm$ 2.2\% unweighted mean; seed-42: 64.4--92.2\%) against nominal 90\%, rigorously bounded by accepted accuracy under Eq.~(\ref{eq:conformal_bound}); conformal guarantees fail under distribution shift without local adaptation.
-\item \emph{Statistical power and equivalence testing.} Modest sample sizes ($N\approx 300$) limit power to detect small AUROC differences; lack of significance after Holm correction does not demonstrate practical equivalence.
-\item \emph{Comparative tree robustness is provisional and context-dependent.} While \sfn{} exceeds native-NaN split-routing trees at 50\% missingness (0.712 vs.\ 0.684), median-imputed LightGBM achieves 0.726, demonstrating that tree models with simple imputation remain competitive under missing data and that neural models do not possess general missingness superiority.
-\item \emph{Ablation interpretation.} Schema retention accounts for the vast majority of the gain ($\approx$+0.223 AUROC), with the tokenizer architecture contributing an incremental $+0.0050$ AUROC. Furthermore, monotonicity regularization and post-hoc temperature scaling address orthogonal clinical objectives (gradient plausibility vs.\ probability calibration) and should not be conflated.
-\item \emph{Reproduction scope.} Our 70/15/15 reproduction demonstrates that standard tabular models achieve $\approx$73\% on the published features, but does not constitute an architecture-faithful reproduction of unreleased neural code.
-\item \emph{Patient identity verification.} Feature signature matching demonstrates record-level duplicate overlap but cannot conclusively prove biological identity without hospital records.
-\item \emph{No prospective clinical validation.} The model is an investigative benchmark prototype, not an approved diagnostic instrument.
+\item \emph{Outcome construct heterogeneity}, as discussed above. Mixing cross-sectional examination findings with 10-year incident events limits what the pooled predictions can mean clinically.
+\item \emph{Pool composition imbalance.} Sulianova supplies 92.6\% of the records, so what the model learns about the specialized cardiology variables rests on a small minority of patients.
+\item \emph{Conformal validity under cohort shift.} Calibrated on the source, coverage is 70.7\% on Framingham and 87.7--88.7\% on the tertiary cohorts (84.6\% $\pm$ 2.2\% unweighted mean; seed-42: 64.4--92.2\%), against a nominal 90\%. Eq.~(\ref{eq:conformal_bound}) bounds it by the accepted accuracy, and without local adaptation the conformal guarantee does not hold under distribution shift.
+\item \emph{Statistical power and equivalence testing.} With about 300 patients per cohort ($N\approx 300$), small AUROC differences are hard to detect, and failing to reach significance after Holm correction is no evidence of practical equivalence.
+\item \emph{Comparative tree robustness is provisional and context-dependent.} \sfn{} beats native-NaN split-routing trees at 50\% missingness (0.712 vs.\ 0.684), but median-imputed LightGBM reaches 0.726. Trees with simple imputation thus stay competitive when data are missing, and neural models have no general edge here.
+\item \emph{Ablation interpretation.} Retaining the schema accounts for most of the gain ($\approx$+0.223 AUROC) and the tokenizer architecture for a further $+0.0050$ AUROC. Monotonicity regularization and post-hoc temperature scaling also pursue different clinical goals (gradient plausibility vs.\ probability calibration) and should be kept apart.
+\item \emph{Reproduction scope.} Our 70/15/15 reproduction shows that standard tabular models reach $\approx$73\% on the published features. It is not a faithful reproduction of the unreleased neural code.
+\item \emph{Patient identity verification.} Matching on feature signatures shows that records overlap at the row level. Without hospital records it cannot show that two rows belong to the same person.
+\item \emph{No prospective clinical validation.} The model is a prototype for investigating benchmarks and is not an approved diagnostic tool.
 \end{enumerate}
 
 %=====================================================================
 \section{Recommended Practice for Cardiovascular Benchmarks}\label{sec:practice}
-Our audit suggests a short checklist that would have prevented the problems documented above and costs little to adopt.
+Our audit points to a short checklist that would have avoided the problems described above and is cheap to adopt.
 \begin{enumerate}
-\item \emph{Deduplicate before splitting}, using exact and near-duplicate signature matching on clinical features, and report the number removed per source.
-\item \emph{Split at the patient level} and, where several files derive from one registry, check for overlap across files before any cross-cohort evaluation.
-\item \emph{Report the pooled composition}: the share of records contributed by each source, and the outcome definition used for each.
-\item \emph{Benchmark against the strongest tree baseline} with native missing-value handling and with the same engineered features as the proposed model.
-\item \emph{Evaluate on a held-out cohort}, not only on a random split of the pool, and give intervals and seed variance.
-\item \emph{Report conformal set coverage and acceptance rate separately}, and check coverage on a different cohort before claiming safety.
-\item \emph{Reconcile every reported number}: text, tables and figures (e.g.\ confusion matrices) should imply identical metrics.
-\item \emph{Publish code, splits and an audit log}, following TRIPOD+AI~\cite{collins2024}.
+\item \emph{Deduplicate before splitting}. Use exact and near-duplicate signature matching on clinical features, and report how many rows were removed from each source.
+\item \emph{Split at the patient level}. Where several files come from one registry, check for overlap between them before running any cross-cohort evaluation.
+\item \emph{Report the pooled composition}, meaning each source's share of the records and the outcome definition it uses.
+\item \emph{Compare against the strongest tree baseline}, with native missing-value handling and the same engineered features as the proposed model.
+\item \emph{Evaluate on a held-out cohort} and not only on a random split of the pool, and report intervals and seed variance.
+\item \emph{Report conformal set coverage and acceptance rate separately}, and check coverage on a different cohort before calling a system safe.
+\item \emph{Reconcile every reported number}, so that text, tables and figures (confusion matrices, for example) imply the same metrics.
+\item \emph{Publish code, splits and an audit log}, as TRIPOD+AI~\cite{collins2024} recommends.
 \end{enumerate}
-We emphasize that items 1--2 are enough, by themselves, to remove the most extreme inflation seen in public heart-disease files (Table~\ref{tab:leak}).
+Items 1--2 alone would already remove the most extreme inflation we saw in public heart-disease files (Table~\ref{tab:leak}).
 
 %=====================================================================
 \section{Conclusion}\label{sec:conclusion}
-Headline accuracies on public cardiovascular benchmarks should be read with suspicion until duplicates, cross-cohort overlap and schema loss are audited. After cleaning, realistic accuracy on pooled routine data is about 73--76\%, and an empirical 70/15/15 reproduction of a published 90.1\% setup using standard tabular baselines gives about 73\% whether or not the duplicates are kept (though this does not refute unreleased proprietary neural code). Cross-hospital transfer depends mostly on preserving unshared variables rather than on architectural novelty. \sfn{} offers a principled way to train across non-identical schemas, with a modest mean gain over a strong NaN-aware tree baseline that is not significant per cohort after Holm correction. At 50\% test-time feature missingness, it exceeds native-NaN LightGBM and XGBoost by approximately 0.028 and 0.041 AUROC, respectively, but is outperformed by median-imputed LightGBM (0.726), confirming that general superiority under missingness is not established. Furthermore, its conformal coverage guarantee weakens under cohort shift. Its claims must be tightened by multi-seed evaluation and prospective validation. We release the audit log, schema registry and code to support independent verification.
+Headline accuracies on public cardiovascular benchmarks deserve suspicion until the duplicates, cross-cohort overlap and schema loss have been checked. Once the data are cleaned, realistic accuracy on pooled routine data is about 73--76\%. Reproducing a published 90.1\% setup (70/15/15) with standard tabular baselines gives about 73\% with or without the duplicates, although that does not refute unreleased proprietary neural code. How well a model transfers between hospitals depends mostly on whether the unshared variables are kept, and much less on architectural novelty. \sfn{} offers a principled way of training across non-identical schemas. It gains a little on average over a strong NaN-aware tree baseline, but no cohort-level gain is significant after Holm correction. With 50\% of features missing at test time it beats native-NaN LightGBM and XGBoost by about 0.028 and 0.041 AUROC, respectively, yet median-imputed LightGBM (0.726) does better than it, so general superiority under missingness is not established. Its conformal coverage guarantee also weakens under cohort shift. These claims need multi-seed evaluation and prospective validation to be firmed up. We release the audit log, schema registry and code so that others can verify the work independently.
 
 \section*{Data and Code Availability}
-All datasets are public. Open-source code, configuration files, clean dataset splits, and reproducible artifact CSVs are archived at GitHub: \url{https://github.com/RathanPaida/SchemaFlexTabNet-QC}. Table~\ref{tab:manifest} provides the complete end-to-end reproducibility manifest mapping every empirical table in this manuscript to its automated script, configuration file, data partitioning protocol, and artifact file in \texttt{results/}.
+All datasets are public. Open-source code, configuration files, clean dataset splits and reproducible artifact CSVs are archived on GitHub: \url{https://github.com/RathanPaida/SchemaFlexTabNet-QC}. Table~\ref{tab:manifest} gives the complete end-to-end reproducibility manifest, mapping every empirical table in this manuscript to its script, configuration file, data partitioning protocol and artifact file in \texttt{results/}.
 
 \begin{table*}[t]
 \caption{End-to-End Reproducibility Manifest. Every empirical table in this manuscript is deterministically linked to an automated pipeline script, configuration file, data split protocol, and verified artifact file in \texttt{results/}.}
 \label{tab:manifest}
 \centering\footnotesize
 \setlength{\tabcolsep}{3.8pt}
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{%
 \begin{tabular}{lllll}
 \toprule
 Manuscript Item & Generating Pipeline Script & Primary Config & Data Split Protocol & Output CSV / Artifact File\\
@@ -567,7 +606,7 @@ Table~\ref{tab:abl} (Ablation \& Mono.) & \texttt{src/ablation\_study.py} & \tex
 Table~\ref{tab:conf} (Conformal Audit) & \texttt{evaluate\_multiseed\_loco\_and\_conformal.py} & $\alpha=0.10$, 3-way split & LOCO 5 folds $\times$ 5 seeds & \texttt{results/loco\_multi\_seed\_stability\_audit.csv}\\
 Table~\ref{tab:miss} (5-Seed Missingness) & \texttt{src/missingness\_experiment.py} & 5 masking seeds & 0--50\% test-time feature dropout & \texttt{results/table6\_missingness\_native\_nan.csv}\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table*}
 
 %=====================================================================
